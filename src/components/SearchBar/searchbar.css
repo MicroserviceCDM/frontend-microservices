@@ -1,0 +1,27 @@
+
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+  
+  video {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-top: -130px;
+    z-index: -1; /* Đặt z-index thấp hơn để video ở phía sau */
+  }
+  
+  .search-box {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    position: absolute;
+    top: 50px; /* Tùy chỉnh khoảng cách từ trên xuống */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1; /* Đặt z-index cao để khung tìm kiếm ở phía trước */
+  }
+  

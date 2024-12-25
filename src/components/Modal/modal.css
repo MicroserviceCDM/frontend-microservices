@@ -1,0 +1,106 @@
+.modalBackground {
+  margin-top: -60px;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(200, 200, 200, 0.5); /* 0.5 là độ mờ, có thể điều chỉnh */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 500;
+}
+
+.modalLoading {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(200, 200, 200, 0.5); /* 0.5 là độ mờ, có thể điều chỉnh */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 500;
+}
+
+.modalContainer {
+  width: 900px;
+  height: 550px;
+  border-radius: 12px;
+  background-color: white;
+  opacity: 1;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 35px;
+}
+  
+  .modalContainer .title {
+    display: inline-block;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .titleCloseBtn {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .titleCloseBtn button {
+    background-color: transparent;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+  }
+  
+  .modalContainer .body {
+    flex: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+    text-align: center;
+  }
+  
+  .modalContainer .footer {
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modalContainer .footer button {
+    width: 150px;
+    height: 45px;
+    margin: 10px;
+    border: none;
+    background-color: cornflowerblue;
+    color: white;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  #cancelBtn {
+    background-color: crimson;
+  }
+
+  .card-info{
+      flex: 2;
+  }
+
+  .other-info{
+    flex: 1.2;
+  }
+  .modal-label{
+    flex: 1;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .modal-input{
+    flex: 3;
+    padding: 8px;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+  }
+  
