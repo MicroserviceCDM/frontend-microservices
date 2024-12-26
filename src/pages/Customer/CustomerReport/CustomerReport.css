@@ -1,0 +1,101 @@
+.report-container{
+    display: flex;
+    border: solid black;
+    width: 900px;
+    height: 450px;
+    margin: 20px;
+    border-radius: 5px;
+}
+
+.left-subcontainer{
+    display: flex;
+    flex-direction: column;
+}
+
+.title{
+  font-weight: 700;
+}
+
+.problem-box{
+    border: solid black;
+    border-radius: 5px;
+    padding: 2px;
+    padding-left: 5px;
+    margin-top: 10px;
+    width: 200px;
+}
+
+.image-box{
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+    border: solid black;
+    border-radius: 5px;
+    margin-top: 10px;
+    height: 120px;
+    width: 300px;
+    font-size: 10px;
+}
+
+.image-info{
+    display: flex;
+    margin: 10px;
+    margin-right: 80px;
+    background-color: rgb(230, 234, 234);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.image-name{
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.container-img{
+    height: 90px;
+}
+
+.btn-add{
+    font-weight: 700;
+    background-color: rgb(230, 234, 234);
+    width: 50px;
+    align-self: flex-end;
+    margin-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-add:hover{
+    background-color: rgb(156, 156, 156);
+}
+
+.description-box{
+    border: solid black;
+    border-radius: 5px;
+    padding: 2px;
+    padding-left: 5px;
+    margin-top: 10px;
+    width: 400px;
+    height: 241px;
+    display: flex;
+    justify-items: flex-start;
+}
+
+.btn-report{
+    font-weight: 600;
+    background-color: rgb(230, 234, 234);
+    align-self: flex-end;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 30px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-report:hover{
+    background-color: rgb(156, 156, 156);
+}
