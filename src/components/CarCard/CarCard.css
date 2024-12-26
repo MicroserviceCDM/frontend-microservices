@@ -1,0 +1,151 @@
+.card{
+    width: 430px;;
+    height: 600px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.card:hover{
+    box-shadow: 
+            4px 0px  10px rgb(166, 166, 166),
+            0px 4px  10px rgb(166, 166, 166),
+            -4px 0px  10px rgb(166, 166, 166),
+            0px -4px  10px rgb(166, 166, 166);
+
+        cursor: pointer;
+}
+
+.card__img{
+    width: 430px;
+    height: 165px;
+
+}
+
+.card__model{
+    flex: 1;
+    font-size: 30px;
+    font-weight: 600;
+    text-align: left;
+    margin: 10px 20px;
+}
+
+.card__price{
+    flex: 2;
+    font-size: 30px;
+    font-weight: 600;
+    text-align: right;
+}
+
+.card__price-throught{
+    text-decoration: line-through;
+    text-align: right;
+    margin-left: 5px;
+}
+
+.card__type{
+    margin: 0px;
+    margin-top: -10px;
+    flex: 3;
+    font-size: 15px;
+    margin-left: 20px;
+    text-align: left;
+}
+
+.card__ppmonth{
+    margin: 0px;
+    flex: 1;
+    margin-top: -10px;
+
+    font-size: 15px;
+    margin-right: 20px;
+    text-align: right;
+}
+
+.card__mile{
+    float: left;
+    margin-left: 20px;
+    margin-top: 3px;
+}
+
+.vehicle-models-page {
+    flex: 3;
+  }
+
+.vehicle-models-sort{
+    flex: 1;
+}
+
+.card__line {
+    margin-top: 20px;
+    width: 0.5px; 
+    height: 50px; 
+    background-color: black;
+}
+
+.card__figure{
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.figure-container{
+    display: flex;
+    flex: 1;
+}
+
+.container-flex{
+    display: flex;
+}
+
+.card__current{
+    text-align: center;
+}
+
+.card__view-detail-button{
+    color: white;
+    font-weight: 500;
+    font-family: "Gotham SSm", "Segoe UI", "Roboto", "Helvetica Neue", Arial, "sans-serif";
+    border: none;
+}
+
+
+
+/* button defined */
+/* Modal styles */
+  .modal {
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  }
+  
+  /* Modal content */
+  .modal-content {
+    background-color: white;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be modified to desired width */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+  }
+  
+  /* Close button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
