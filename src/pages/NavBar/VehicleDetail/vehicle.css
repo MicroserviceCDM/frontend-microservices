@@ -1,0 +1,144 @@
+.mycontainer {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  .left-panel {
+    flex: 2.2;
+    margin: auto 0;
+    width: 100%;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .right-panel {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+  }
+  
+  .img-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .img {
+    width: 100%;
+    margin-top: 150px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .img:hover{
+    cursor: pointer;
+  }
+  
+  .price-card {
+    margin: 0 auto;
+    width: 60%;
+    height: 80px;
+    border-radius:  10px  10px 0px 0px;
+    background-color: rgb(238, 238, 238);
+  }
+  
+  .banner-infor {
+    padding: 20px;
+    color: white;
+    margin: 0 auto;
+    width: 72%;
+    background-image: linear-gradient(rgb(37,50,87), rgb(58,79,136), rgb(37,50,87));
+    margin-top: 50px;
+
+  }
+  
+  .line{
+    height: 70%;
+    width: 1px;
+    background-color: black;
+    margin-top: 10px;
+  }
+
+  .left-button,
+  .right-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    margin: 20px;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  
+  .left-button {
+    left: 0;
+  }
+
+  .left-button:hover{
+    background-color: rgb(179, 179, 179);
+        cursor: pointer;
+  }
+  
+  .right-button {
+    right: 0;
+  }
+  .right-button:hover{
+
+    background-color: rgb(179, 179, 179);
+    cursor: pointer;
+
+}
+
+.mylabel,li{
+    margin: 5px 15%;
+}
+
+ul {
+    list-style: disc inside;
+ }
+
+ .date-input{
+    margin: 5px 14%;
+    width: 72%;
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid black;
+ }
+ .mybutton {
+    margin: 0px 14%;
+    float: right;
+    padding: 8px 20px;
+    border-radius: 10px;
+    color: white;
+    background-color: black;
+    border: none; /* Loại bỏ đường viền mặc định */
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s; /* Hiệu ứng transition */
+
+    /* Đổ bóng mặc định */
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.mybutton:hover {
+    background-color: #333; /* Màu nền khi hover */
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.7); /* Đổ bóng khi hover */
+}
+
+.mybutton:active {
+    background-color: #000; /* Màu nền khi active */
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.9); /* Đổ bóng khi active */
+}
+
+.note{
+    margin: 5px 15%;
+
+}
+
+ 

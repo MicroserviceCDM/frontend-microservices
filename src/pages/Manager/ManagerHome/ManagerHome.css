@@ -1,0 +1,18 @@
+.banner{
+    height: 15vh;
+    width: 80%;
+    border-radius: 10px;
+    opacity: 0.7;
+}
+
+.banner--red{
+    background-color: rgb(210, 141, 141);
+}
+
+.banner--green{
+    background-color: rgb(47, 118, 57);
+}
+
+.banner--blue{
+    background-color: rgb(63, 63, 161);
+}
