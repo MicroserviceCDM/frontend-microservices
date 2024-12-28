@@ -1,0 +1,9 @@
+body {
+  background-color: white;
+}
+
+.hero-section {
+  background: linear-gradient(90deg, rgba(47,45,45,0.2) 0%, rgba(0,0,0,0.2) 23%), url(./assets/images/hero1.jpg) no-repeat center top ;
+  background-size: cover;
+}
+
