@@ -1,0 +1,232 @@
+#list-box{
+    border: solid black;
+}
+
+#info-user{
+    border: solid black;
+    height: 110px;
+}
+
+#task-list{
+    border: solid black;
+    height: 115px;
+}
+
+#note-box{
+    border: solid black;
+    height: 145px;
+}
+
+#chat-box{
+    border: solid black;
+    height: 385px;
+}
+
+.search-bar-container{
+    display: flex;
+    justify-content: center;
+    height: 50px;
+    align-items: center;
+    position: relative;
+    border: solid #D9D9D9 1px;
+}
+
+.search-bar{
+    
+    width: 140px;
+    background: #D9D9D9;
+    display: flex; 
+    height: 25px;   
+    width: 140px;
+    border: none;
+    
+}
+
+input:focus{
+    outline: none;
+}
+
+input[type="text"]::placeholder{
+    text-align: center;
+}
+
+.btn-search{
+    position: absolute;
+    top: 7px;
+    right: 0;
+    width: 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    margin-right: 60px;
+}
+
+.sidebar__icon {
+    width: 15px;
+  }
+
+.user-box{
+    display: flex;
+    height: 50px;
+    align-items: center;
+    position: relative;
+    border: solid #D9D9D9 1px;
+}
+
+.circle-name{
+    background-color: black;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+li{
+    list-style-type: none;
+}
+
+.user-fname{
+    font-size: 10px;
+    color: white;
+}
+
+.user-box:hover{
+    background-color: rgb(213, 219, 246);
+    cursor: pointer;
+}
+
+.common_icon{
+    height: 30px;
+}
+
+.avatar-user{
+    margin: 10px;
+}
+
+.info-basic{
+    font-size: 12px;
+    color: rgb(156, 156, 156);
+}
+
+.check-title{
+    cursor: pointer;
+    font-size: 12px;
+    
+    
+}
+
+.check-box{
+    width: 10px;
+    margin-right: 5px;
+    margin-left: 5px ;
+
+}
+
+input[type="checkbox"]:checked + label {
+    text-decoration: line-through;
+  }
+
+.check-box:checked{
+    accent-color: rgb(156, 156, 156);
+}
+
+.note-wrapper{
+    display: flex;
+    flex-direction: column;
+    margin-right: 5px;
+    width: 182px;
+}
+
+.save-box{
+    display: flex;
+    align-self: end;
+    background-color: #D9D9D9;
+    font-size: 12px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 5px;
+}
+
+.save-box:hover{
+    background-color: rgb(156, 156, 156);
+}
+
+#note-content{
+    height: 60px;
+}
+
+#note-write{
+    height: 30px;
+}
+
+.area-chat{
+    display: flex;
+    flex-direction: column;
+    height: 90%;
+
+}
+
+.area-write{
+    display: flex;
+    flex: 1;
+    background-color: rgb(213, 219, 246);
+}
+
+.balloon-chat-customer{
+    display: flex;
+    background-color: #D9D9D9;
+    max-width: 200px;
+    margin: 10px;
+    border-radius: 20px;
+}
+
+.balloon-chat-staff{
+    display: flex;
+    align-self: flex-end;
+    justify-content: flex-end;
+    background-color:  rgb(213, 219, 246);
+    width: 200px;
+    margin: 10px;
+    border-radius: 20px;
+}
+
+.chat-content{
+    margin: 5px 10px 5px 15px;
+    font-size: 12px;
+}
+
+#file{
+    display: none;
+}
+
+.camera_icon{
+    height: 30px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+
+
+#message{
+    background-color:  rgb(213, 219, 246);
+    font-size: 15px;
+}
+
+.btn-send{
+    display: flex;
+    align-self: center;
+    background-color: #D9D9D9;
+    font-size: 12px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 5px;
+    margin-left: 40px;
+}
+
+.btn-send:hover{
+    background-color: rgb(156, 156, 156);
+}
