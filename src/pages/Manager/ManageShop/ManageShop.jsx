@@ -95,7 +95,7 @@ const ManageShopPage = () => {
       formData.append("file", formState.image_url);
       formData.append("upload_preset", "xuanlinh");
 
-      const resUpload = await axios.post("https://api.cloudinary.com/v1_1/dbixymfbp/image/upload", formData);
+      const resUpload = await axios.post("https://api.cloudinary.com/v1_1/dqfhfd7ts/image/upload", formData);
 
       setFormState({...formState, image_url: resUpload.data.secure_url});
       const subFormState = {...formState, image_url: resUpload.data.secure_url};

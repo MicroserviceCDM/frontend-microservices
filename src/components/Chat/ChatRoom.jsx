@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
 import { cdmApi } from "../../misc/cdmApi";
+import { config } from "../../misc/Constants";
 
 import "./ChatRoom.css";
 import axios from "axios";
@@ -29,21 +30,32 @@ const ChatRoom = () => {
   //   setPrivateChats(new Map(chats));
   // };
 
-  const loadPublicChats = async () => {
-    const response = await axios.get("http://localhost:8080/api/chat/public-messages");
-    const data = response.data;
-    setPublicChats(data);
-  };
-  
-  const loadPrivateChats = async (senderName, receiverName) => {
-    const response = await axios.get(`http://localhost:8080/api/chat/private-messages/${senderName}/${receiverName}`);
-    const data = response.data;
-    console.log(data);
-    if (data) {
-      privateChats.set(receiverName, data);
+  // Chat API functions
+const loadPublicChats = async () => {
+  try {
+    const response = await axios.get(`${config.url.API_BASE_URL}/api/chat/public-messages`);
+    setPublicChats(response.data);
+  } catch (error) {
+    console.error('Error loading public chats:', error);
+    // You might want to handle the error appropriately here
+  }
+};
+
+const loadPrivateChats = async (senderName, receiverName) => {
+  try {
+    const response = await axios.get(
+      `${config.url.API_BASE_URL}/api/chat/private-messages/${senderName}/${receiverName}`
+    );
+    
+    if (response.data) {
+      privateChats.set(receiverName, response.data);
       setPrivateChats(new Map(privateChats));
     }
-  };
+  } catch (error) {
+    console.error('Error loading private chats:', error);
+    // You might want to handle the error appropriately here
+  }
+};
 
   const handleUserClick = (receiverName) => {
     console.log("user bam vao tab ng dung")
@@ -59,7 +71,7 @@ const ChatRoom = () => {
   }, []);
 
   const connect = () => {
-    let Sock = new SockJS("http://localhost:8080/ws");
+    let Sock = new SockJS(`${config.url.API_BASE_URL}/ws`);
     stompClient = over(Sock);
     stompClient.connect({}, onConnected, onError);
   };

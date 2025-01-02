@@ -98,7 +98,7 @@ const ManageCustomerPage = () => {
       formData.append("file", formState.avatar);
       formData.append("upload_preset", "xuanlinh");
 
-      const resUpload = await axios.post("https://api.cloudinary.com/v1_1/dbixymfbp/image/upload", formData);
+      const resUpload = await axios.post("https://api.cloudinary.com/v1_1/dqfhfd7ts/image/upload", formData);
       
       setFormState({...formState, avatar: resUpload.data.secure_url});
       const subFormState = {...formState, avatar: resUpload.data.secure_url};

@@ -53,7 +53,7 @@ function signup(user) {
 
 function deleteVoucher(voucher) {
   return instance.delete(
-    "http://localhost:9296/api/vouchers/delete",
+    "/api/vouchers/delete",
     { data: voucher }, // Include the voucher in the request body
     {
       headers: {
@@ -126,7 +126,7 @@ function deleteUser(id) {
   });
 }
 function checkVoucher(code) {
-  return instance.post(`http://localhost:9296/api/vouchers/check_voucher?voucherCode=${code}`, {
+  return instance.post(`/api/vouchers/check_voucher?voucherCode=${code}`, {
     // params: {
     //   voucherCode: code,
     // },
@@ -393,7 +393,7 @@ function getAllVoucher() {
 }
 
 function getShopById(id) {
-  return instance.get('http://localhost:9296/api/v1/products/getShopById/' + id);
+  return instance.get('/api/v1/products/getShopById/' + id);
 }
 
 function getPublicChat() {

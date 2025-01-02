@@ -2,9 +2,9 @@ import { Cloudinary } from 'cloudinary-core';
 
 const CloudinaryConfig = () => {
     const cloudinary = new Cloudinary({
-        cloud_name: "djxszgsln",
-        api_key: "925724911559638",
-        api_secret: "SvVdpKQunbpo-AmdQQ-81JNqXUw",
+        cloud_name: "dqfhfd7ts",
+        api_key: "713439287113838",
+        api_secret: "W_-0BdXSFS8t14S9IW5BE9K-H4Q",
       });
 };
 

@@ -98,10 +98,10 @@ const StaffManageCustomerPage = () => {
     else {
       const formData = new FormData();
       formData.append("file", formState.avatar);
-      formData.append("upload_preset", "dinhkhoa");
+      formData.append("upload_preset", "xuanlinh");
 
       const resUpload = await axios.post(
-        "https://api.cloudinary.com/v1_1/dbixymfbp/image/upload",
+        "https://api.cloudinary.com/v1_1/dqfhfd7ts/image/upload",
         formData
       );
 

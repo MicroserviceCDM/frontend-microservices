@@ -1,5 +1,5 @@
 import "./cartStyle.css";
-import SideBar from "../../../layouts/components/SideBar";
+import SideBar from "../../../layouts/components/sideBar/SideBar";
 import CartList from "./components/CartList";
 import FooterCart from "./components/FooterCart";
 import CartData from "./cart";
@@ -11,27 +11,43 @@ import Alert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import emptycart from "../../../assets/images/cartEmpty.gif";
+import { config } from "../../../misc/Constants";
 
 //new
 const ShoppingCart = () => {
   const navigate = useNavigate();
   let isRunning = false;
-  const [carts, setCarts] = useState(
-    JSON.parse(localStorage.getItem("cart")) || []
-  );
+  const [isDarkMode, setIsDarkMode] = useState(JSON.parse(localStorage.getItem('darkMode')) || false);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const darkMode = JSON.parse(localStorage.getItem('darkMode')) || false;
+      setIsDarkMode(darkMode);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const [carts, setCarts] = useState(JSON.parse(localStorage.getItem("cart")) || []);
   const [total, setTotal] = useState(0);
   const [shippingFee, setShippingFee] = useState(8000);
-
   const [snackbar, setSnackbar] = React.useState(null);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+
   const handleCloseSnackbar = () => setSnackbar(null);
-  const [paymentMethod, setPaymentMethod] = useState(
-    localStorage.getItem("payment_method")
-  ); // ["Cash", "VNPay"]
   const userData = useState(
     JSON.parse(localStorage.getItem("currentUser")) || []
   );
   const [user, setUser] = useState([]);
-  const [voucherCode, setVoucherCode] = useState("");
+
   const fetchInfo = async () => {
     try {
       const res = await cdmApi.getUserMe(userData.username);
@@ -60,7 +76,6 @@ const ShoppingCart = () => {
     const total = carts.reduce((acc, item) => {
       return acc + item.price * item.quantity;
     }, 0);
-
     setTotal(total);
   }, [carts]);
 
@@ -95,7 +110,7 @@ const ShoppingCart = () => {
     } else {
       try {
         const response = await axios.get(
-          "http://localhost:9296/api/payment/create_payment",
+          `${config.url.API_BASE_URL}/api/payment/create_payment`,
           {
             params: {
               amount: total,
@@ -154,39 +169,63 @@ const ShoppingCart = () => {
     // }
   };
 
+  const handleRemoveItem = (itemId) => {
+    const newCarts = carts.filter(item => item.id !== itemId);
+    setCarts(newCarts);
+    localStorage.setItem("cart", JSON.stringify(newCarts));
+  };
+
+  const handleQuantityChange = (itemId, change) => {
+    const newCarts = carts.map(item => {
+      if (item.id === itemId) {
+        const newQuantity = item.quantity + change;
+        // Đảm bảo số lượng không nhỏ hơn 1
+        if (newQuantity < 1) return item;
+        return { 
+          ...item, 
+          quantity: newQuantity,
+          totalPrice: item.price * newQuantity // Thêm tổng giá cho item
+        };
+      }
+      return item;
+    });
+    setCarts(newCarts);
+    localStorage.setItem("cart", JSON.stringify(newCarts));
+  };
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
 
   if (carts.length === 0) {
     return (
-      <div className=" h-[92vh] flex justify-center items-center text-4xl flex flex-col dark:bg-slate-800">
-        <div>
-          <h3 className="text-white">Cart is Empty</h3>
-        </div>
-
-        <div>
-          <img className=" h-[25vh]" src={emptycart} alt="emptycart" />
-        </div>
-        <div className="text-xl dark:text-white">
-          Your cart lives to serve. Give it purpose — fill it with whell, key
-          chain, or other products that you love. Continue shopping on the{" "}
-          <a
-            onClick={() => navigate("/shop")}
-            className="text-blue-500 hover:text-blue-700 hover:cursor-pointer"
-          >
-            shop
-          </a>
-        </div>
-        <div className="mt-6">
-          <button
-            onClick={() => navigate("/shop")}
-            className="dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-300 mt-10 md:mt-0 bg-black text-white py-5 hover:bg-gray-200 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 border border-gray-800 font-medium w-96 2xl:w-full text-base font-medium leading-4 text-gray-800"
-          >
-            Continue Shopping
-          </button>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 pt-20">
+        <div className="container mx-auto px-4 py-16 flex flex-col items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-2xl w-full text-center">
+            <img 
+              src={emptycart} 
+              alt="Empty Cart" 
+              className="w-64 h-64 mx-auto mb-8"
+            />
+            <h2 className="text-3xl font-bold mb-4 dark:text-white">
+              Giỏ hàng của bạn đang trống
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              Hãy khám phá cửa hàng của chúng tôi và tìm những sản phẩm tuyệt vời
+            </p>
+            <button
+              onClick={() => navigate("/shop")}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition duration-200"
+            >
+              Tiếp tục mua sắm
+            </button>
+          </div>
         </div>
       </div>
     );
   }
-  const [discount, setDiscount] = useState(0);
 
   const applyVoucher = async () => {
     if (voucherCode === "") {
@@ -209,311 +248,217 @@ const ShoppingCart = () => {
   };
 
   return (
-    <div className="py-8 px-4 md:px-6 2xl:px-20 2xl:container 2xl:mx-auto dark:bg-slate-800">
-      <div className="mt-10 flex flex-col xl:flex-row jusitfy-center items-stretch w-full xl:space-x-8 space-y-4 md:space-y-6 xl:space-y-0">
-        <div className="flex flex-col justify-start items-start w-full space-y-4 md:space-y-6 xl:space-y-8">
-          <div className="flex flex-col justify-start items-start  bg-gray-50 px-4 py-4 md:py-6 md:p-6 xl:p-8 w-full dark:bg-gray-500">
-            <p className="flex text-lg md:text-xl  font-semibold leading-6 xl:leading-5 text-black dark:text-white">
-              Customer’s Cart
-            </p>
-            <div className="flex justify-between items-center w-full mt-10">
-              <button
-                className="dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-300 text-base font-semibold leading-4 text-black bg-gray-300 p-3 dark:text-white"
-                onClick={() => handleDeleteCart()}
-              >
-                Delete cart
-              </button>
-            </div>
-            {/* {carts} */}
-            {/* <div className="mt-4 md:mt-6 flex flex-col md:flex-row justify-start items-start md:items-center md:space-x-6 xl:space-x-8 w-full">
-            <div className="pb-4 md:pb-8 w-full md:w-40">
-              <img className="w-full hidden md:block" src="https://i.ibb.co/84qQR4p/Rectangle-10.png" alt="dress" />
-              <img className="w-full md:hidden" src="https://i.ibb.co/L039qbN/Rectangle-10.png" alt="dress" />
-            </div>
-            <div className="border-b border-gray-200 md:flex-row flex-col flex justify-between items-start w-full pb-8 space-y-4 md:space-y-0">
-              <div className="w-full flex flex-col justify-start items-start space-y-8">
-                <h3 className="text-xl xl:text-2xl font-semibold leading-6 text-black">Premium Quaility Dress</h3>
-                <div className="flex justify-start items-start flex-col space-y-2">
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Style:</span> Italic Minimal Design</p>
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Size:</span> Small</p>
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Color:</span> Light Blue</p>
+    <div className={`min-h-screen pt-20 ${isDarkMode ? 'bg-[#1a1f2e] text-white' : 'bg-gray-100 text-gray-800'}`}>
+      <div className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cart Items Section */}
+          <div className="lg:col-span-2">
+            <div className={`rounded-xl shadow-lg p-6 ${isDarkMode ? 'bg-[#242b3d]' : 'bg-white'}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Giỏ hàng của bạn</h2>
+                <div className="flex items-center gap-4">
+                  {/* Dark Mode Toggle Button */}
+                  <button
+                    onClick={toggleDarkMode}
+                    className={`p-2 rounded-full transition-colors ${
+                      isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {isDarkMode ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleDeleteCart}
+                    className="text-red-500 hover:text-red-400 font-medium"
+                  >
+                    Xóa tất cả
+                  </button>
                 </div>
               </div>
-              <div className="flex justify-between space-x-8 items-start w-full">
-                <p className="text-base xl:text-lg leading-6">$36.00 <span className="text-red-300 line-through"> $45.00</span></p>
-                <p className="text-base xl:text-lg leading-6 text-black">01</p>
-                <p className="text-base xl:text-lg font-semibold leading-6 text-black">$36.00</p>
-              </div>
-            </div>
-          </div> */}
-            {carts.map((cart) => {
-              return (
-                <CartItem
-                  key={cart.id}
-                  id={cart.id}
-                  image={cart.imgSrc}
-                  title={cart.name}
-                  price={cart.price}
-                  quantity={cart.quantity}
-                  total={cart.price * cart.quantity}
-                />
-              );
-            })}
-            {/* <div className="mt-6 md:mt-0 flex justify-start flex-col md:flex-row items-start md:items-center space-y-4 md:space-x-6 xl:space-x-8 w-full">
-            <div className="w-full md:w-40">
-              <img className="w-full hidden md:block" src="https://i.ibb.co/s6snNx0/Rectangle-17.png" alt="dress" />
-              <img className="w-full md:hidden" src="https://i.ibb.co/BwYWJbJ/Rectangle-10.png" alt="dress" />
-            </div>
-            <div className="flex justify-between items-start w-full flex-col md:flex-row space-y-4 md:space-y-0">
-              <div className="w-full flex flex-col justify-start items-start space-y-8">
-                <h3 className="text-xl xl:text-2xl font-semibold leading-6 text-black">High Quaility Italic Dress</h3>
-                <div className="flex justify-start items-start flex-col space-y-2">
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Style: </span> Italic Minimal Design</p>
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Size: </span> Small</p>
-                  <p className="text-sm leading-none text-gray-800"><span className="text-black underline">Color: </span> Light Blue</p>
-                </div>
-              </div>
-              <div className="flex justify-between space-x-8 items-start w-full">
-                <p className="text-base xl:text-lg leading-6">$20.00 <span className="text-red-300 line-through"> $30.00</span></p>
-                <p className="text-base xl:text-lg leading-6 text-black0">01</p>
-                <p className="text-base xl:text-lg font-semibold leading-6 text-black">$20.00</p>
-              </div>
-            </div>
-          </div> */}
-          </div>
-          <div className="flex justify-center flex-col md:flex-row flex-col items-stretch w-full space-y-4 md:space-y-0 md:space-x-6 xl:space-x-8">
-            <div className=" dark:bg-gray-500 flex flex-col px-4 py-6 md:p-6 xl:p-8 w-full bg-gray-50 space-y-6">
-              <h3 className="text-xl font-semibold leading-5 text-black dark:text-white ">
-                Summary
-              </h3>
-              <div className="flex justify-center items-center w-full space-y-4 flex-col border-gray-200 border-b pb-4">
-                <div className="flex justify-between w-full">
-                  <p className="text-base  leading-4 text-black dark:text-white">
-                    Subtotal
-                  </p>
-                  <p className="text-base  leading-4 text-black dark:text-white">
-                    {total.toLocaleString()} vnd
-                  </p>
-                </div>
-                {/* <div className="flex justify-between items-center w-full">
-                <p className="text-base  leading-4 text-black">Discount <span className="bg-gray-200 p-1 text-xs font-medium leading-3 text-gray-800">STUDENT</span></p>
-                <p className="text-base  leading-4 text-black">-$28.00 (50%)</p>
-              </div> */}
-                <div className="flex justify-between items-center w-full">
-                  <p className="text-base  leading-4 text-black dark:text-white">
-                    Shipping
-                  </p>
-                  <p className="text-base  leading-4 text-black dark:text-white">
-                    {shippingFee.toLocaleString()} vnd
-                  </p>
-                </div>
-                <div className="flex justify-between items-center w-full">
-                  <p className="text-base leading-4 text-black dark:text-white">
-                    Enter voucher code
-                  </p>
-                  <div className="ml-auto">
-                    <button
-                      onClick={() => applyVoucher()}
-                      className="float-right py-2 ml-2 rounded-xl text-white bg-black dark:bg-blue-500 dark:hover:bg-blue-700 "
-                    >
-                      OK
-                    </button>
 
-                    <input
-                      onChange={(e) => setVoucherCode(e.target.value)}
-                      type="text"
-                      className="float-right py-2 bg-white rounded-xl w-[50%] border-solid border-1 border-black dark:boder-none dark:border-0"
+              <div className="space-y-4">
+                {carts.map((cart) => (
+                  <div 
+                    key={cart.id} 
+                    className={`flex items-center gap-4 p-4 rounded-lg relative ${
+                      isDarkMode ? 'bg-[#2a324a]' : 'bg-gray-50'
+                    }`}
+                  >
+                    <img 
+                      src={cart.imgSrc} 
+                      alt={cart.name}
+                      className="w-24 h-24 object-cover rounded-lg"
                     />
+                    <div className="flex-1 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-lg">{cart.name}</h3>
+                        <div className="flex items-center gap-3 mt-2">
+                          <button
+                            onClick={() => handleQuantityChange(cart.id, -1)}
+                            className={`w-8 h-8 flex items-center justify-center rounded-full ${
+                              isDarkMode 
+                                ? 'bg-gray-700 hover:bg-gray-600' 
+                                : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          <span className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {cart.quantity}
+                          </span>
+                          <button
+                            onClick={() => handleQuantityChange(cart.id, 1)}
+                            className={`w-8 h-8 flex items-center justify-center rounded-full ${
+                              isDarkMode 
+                                ? 'bg-gray-700 hover:bg-gray-600' 
+                                : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                        <p className="text-blue-500 font-medium mt-2">
+                          {(cart.price * cart.quantity).toLocaleString()} VND
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveItem(cart.id)}
+                        className="text-red-500 hover:text-red-400 p-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div
-                className={`flex justify-between items-center w-full ${
-                  discount === 0 ? "hidden" : "block"
-                }`}
-              >
-                <p className="text-base  leading-4 text-black dark:text-white">
-                  Discount
-                </p>
-                <p className="text-base  leading-4 text-black dark:text-white">
-                  -{total * (discount / 100)} vnd
-                </p>
-              </div>
-              <div className="flex justify-between items-center w-full">
-                <p className="text-base font-semibold leading-4 text-black dark:text-white">
-                  Total
-                </p>
-                <p className="text-base  font-semibold leading-4 text-black dark:text-white">
-                  {total +
-                    shippingFee -
-                    total * (discount / 100)}{" "}
-                  vnd
-                </p>
+                ))}
               </div>
             </div>
+          </div>
 
-              <div className="flex flex-col justify-center px-4 py-6 md:p-6 xl:p-8 w-full bg-gray-50 space-y-6 dark:bg-gray-500">
-                <h3 className="text-xl font-semibold leading-5 text-black dark:text-white ">
-                  Payment Method
-                </h3>
-                {paymentMethod === "Cash" ? (
-                  <div className="flex justify-between items-center w-full">
-                    <div className="flex justify-center items-center">
-                      <div className="w-32 h-16">
-                        <img
-                          className="w-full h-full"
-                          alt="logo"
-                          src="https://res.cloudinary.com/droondbdu/image/upload/v1699951017/cash-payment-button-web-template-speech-bubble-banner-label-cash-payment-sign-icon-illustration-vector_wzovut.jpg"
-                        />
-                      </div>
-                      <div className="flex flex-col justify-start items-center">
-                        <p className="text-lg leading-6  font-semibold text-black dark:text-white">
-                          Cash on Delivery
-                          <br />
-                          <span className="font-normal dark:text-white">
-                            Delivery with 24 Hours
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    {/* <p className="text-lg font-semibold leading-6 text-black">
-                      ${shippingFee}
-                    </p> */}
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center w-full">
-                    <div className="flex justify-center items-center">
-                      <div className="w-32 h-16">
-                        <img
-                          className="w-full h-full"
-                          alt="logo"
-                          src="https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/9d/11/23/9d1123ee-079c-762d-bdda-ef59f3f6abd9/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png"
-                        />
-                      </div>
-                      <div className="flex flex-col justify-start items-center">
-                        <p className="text-lg leading-6  font-semibold text-black dark:text-white ml-4">
-                          VNPay
-                          <br />
-                          <span className="font-normal dark:text-white ">
-                            Delivery with 24 Hours
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    {/* <p className="text-lg font-semibold leading-6 text-black">
-                      ${shippingFee}
-                    </p> */}
+          {/* Order Summary Section */}
+          <div className="lg:col-span-1">
+            <div className={`rounded-xl shadow-lg p-6 sticky top-24 ${isDarkMode ? 'bg-[#242b3d]' : 'bg-white'}`}>
+              <h2 className="text-xl font-bold mb-6">Tổng đơn hàng</h2>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Tạm tính</span>
+                  <span>{total.toLocaleString()} VND</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Phí vận chuyển</span>
+                  <span>{shippingFee.toLocaleString()} VND</span>
+                </div>
+
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-500">
+                    <span>Giảm giá</span>
+                    <span>-{(total * (discount / 100)).toLocaleString()} VND</span>
                   </div>
                 )}
-                {/* <div className="flex justify-between items-start w-full">
-                  <div className="flex justify-center items-center space-x-4">
-                    <div className="w-8 h-8">
-                      <img
-                        className="w-full h-full"
-                        alt="logo"
-                        src="https://i.ibb.co/L8KSdNQ/image-3.png"
-                      />
-                    </div>
-                    <div className="flex flex-col justify-start items-center">
-                      <p className="text-lg leading-6  font-semibold text-black">
-                        VNPay
-                        <br />
-                        <span className="font-normal">
-                          Delivery with 24 Hours
-                        </span>
-                      </p>
-                    </div>
+
+                <div className={`border-t pt-4 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                  <div className="flex justify-between">
+                    <span className="font-bold">Tổng cộng</span>
+                    <span className="font-bold text-blue-500">
+                      {(total + shippingFee - total * (discount / 100)).toLocaleString()} VND
+                    </span>
                   </div>
-                  <p className="text-lg font-semibold leading-6 text-black">
-                    ${shippingFee}
+                </div>
+
+                {/* Payment Method Selection */}
+                <div className="space-y-2">
+                  <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    Phương thức thanh toán
                   </p>
-                </div> */}
-                <div className="w-full flex justify-center items-center">
-                  <button
-                    onClick={() => navigate("/customerhome/payment")}
-                    className="dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-300 dark:hover:text-white mt-6 md:mt-0 bg-black text-white py-5 hover:bg-gray-200 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 border border-gray-800 font-medium w-96 2xl:w-full text-base font-medium leading-4 text-gray-800"
-                  >
-                    Change Payment Method
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-500 w-full xl:w-96 flex justify-between items-center md:items-start px-4 py-6 md:p-6 xl:p-8 flex-col">
-            <h3 className="text-xl  font-semibold leading-5 text-black dark:text-white">
-              Customer
-            </h3>
-            <div className="flex flex-col md:flex-row xl:flex-col justify-start items-stretch h-full w-full md:space-x-6 lg:space-x-8 xl:space-x-0">
-              <div className="flex flex-col justify-start items-start flex-shrink-0">
-                <div className="flex justify-center w-full md:justify-start items-center space-x-4 py-8 border-b border-gray-200">
-                  <img
-                    src="https://i.ibb.co/5TSg7f6/Rectangle-18.png"
-                    alt="avatar"
-                  />
-                  <div className="flex justify-start items-start flex-col space-y-2">
-                    <p className="text-base font-semibold leading-4 text-left text-black dark:text-white">
-                      {userData[0].email}
-                    </p>
-                    <p className="text-sm leading-5 text-black dark:text-white">
-                      10 Previous Orders
-                    </p>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setPaymentMethod("Cash")}
+                      className={`flex-1 py-2 px-4 rounded-lg border transition-colors ${
+                        paymentMethod === "Cash"
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : isDarkMode
+                            ? 'border-gray-600 text-white hover:border-blue-500'
+                            : 'border-gray-300 text-gray-700 hover:border-blue-500'
+                      }`}
+                    >
+                      Tiền mặt
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod("VNPay")}
+                      className={`flex-1 py-2 px-4 rounded-lg border transition-colors ${
+                        paymentMethod === "VNPay"
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : isDarkMode
+                            ? 'border-gray-600 text-white hover:border-blue-500'
+                            : 'border-gray-300 text-gray-700 hover:border-blue-500'
+                      }`}
+                    >
+                      VNPay
+                    </button>
                   </div>
                 </div>
-                <div className="flex justify-center text-black md:justify-start items-center space-x-4 py-4 border-b border-gray-200 w-full">
-                  <img
-                    className="dark:text-white"
-                    src="https://tuk-cdn.s3.amazonaws.com/can-uploader/order-summary-3-svg1.svg"
-                    alt="email"
-                  />
-                  <p className="cursor-pointer text-sm leading-5 dark:text-white">
-                    {userData[0].username}
-                  </p>
-                </div>
-              </div>
-              <div className=" flex justify-between xl:h-full items-stretch w-full flex-col mt-6 md:mt-0">
-                <div className=" flex justify-center md:justify-start xl:flex-col flex-col md:space-x-6 lg:space-x-8 xl:space-x-0 space-y-4 xl:space-y-12 md:space-y-0 md:flex-row items-center md:items-start">
-                  <div className="flex justify-center md:justify-start items-center md:items-start flex-col space-y-4 xl:mt-8">
-                    <p className="text-base font-semibold leading-4 text-center md:text-left text-black dark:text-white">
-                      Shipping Address
-                    </p>
-                    <p className="w-48 lg:w-full xl:w-48 text-center md:text-left text-sm leading-5 text-black dark:text-white">
-                      {userData[0].address}
-                    </p>
-                  </div>
-                  <div className="flex justify-center md:justify-start items-center md:items-start flex-col space-y-4">
-                    <p className="text-base font-semibold leading-4 text-center md:text-left text-black dark:text-white">
-                      Billing Address
-                    </p>
-                    <p className="w-48 lg:w-full xl:w-48 text-center md:text-left text-sm leading-5 text-black0 dark:text-white">
-                      {userData[0].address}
-                    </p>
+
+                {/* Voucher Input */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Nhập mã giảm giá"
+                      className={`flex-1 px-4 py-2 rounded-lg border ${
+                        isDarkMode 
+                          ? 'bg-[#2a324a] border-gray-600' 
+                          : 'bg-white border-gray-300'
+                      }`}
+                      onChange={(e) => setVoucherCode(e.target.value)}
+                    />
+                    <button
+                      onClick={applyVoucher}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                    >
+                      Áp dụng
+                    </button>
                   </div>
                 </div>
-                <div className="flex w-full justify-center items-center md:justify-start md:items-start">
-                  <button
-                    onClick={handleCart}
-                    className="dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-300 dark:hover:text-white mt-6 md:mt-0 py-5 bg-black text-white hover:text-black hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 border border-gray-800 w-96 2xl:w-full text-base font-black leading-4 "
-                  >
-                    Orders
-                  </button>
-                </div>
+
+                <button
+                  onClick={handleCart}
+                  className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600"
+                >
+                  Thanh toán
+                </button>
               </div>
             </div>
           </div>
         </div>
-        {snackbar && (
-          <Snackbar
-            open
-            onClose={handleCloseSnackbar}
-            autoHideDuration={6000}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            <Alert {...snackbar} onClose={handleCloseSnackbar} />
-          </Snackbar>
-        )}
       </div>
-    );
-  }
+
+      {snackbar && (
+        <Snackbar
+          open
+          onClose={handleCloseSnackbar}
+          autoHideDuration={6000}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert {...snackbar} onClose={handleCloseSnackbar} />
+        </Snackbar>
+      )}
+    </div>
+  );
+};
 
 
 export default ShoppingCart;

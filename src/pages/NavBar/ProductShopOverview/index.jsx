@@ -10,6 +10,8 @@ import { cdmApi } from '../../../misc/cdmApi'
 import { Snackbar } from '@mui/material'
 import Alert from '@mui/material/Alert'
 import React from 'react'
+import { config } from '../../../misc/Constants'
+
 const product = {
     
   name: 'Basic Tee 6-Pack',
@@ -97,7 +99,7 @@ export default function Example() {
       setSnackbar({ children: "Add to cart successfully!", severity: "success" });
     }
 
-    const url = "http://localhost:9296/api/v1/products/getShopById/" + params.id;
+    const url = `${config.url.API_BASE_URL}/api/v1/products/getShopById/` + params.id;
     const fetchInfo = async () => {
       try {
           const res = await cdmApi.getShopById(params.id);
