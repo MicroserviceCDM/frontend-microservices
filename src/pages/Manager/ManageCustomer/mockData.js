@@ -708,6 +708,5 @@ export const mockDataTeam = [
     "phone": "(656) 5797692",
     "access": "admin"
   },
-  
 ];
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ManagerSideBar from '../../../layouts/components/ManagerSideBar';
 import Box from '@mui/material/Box';
-import { DataGrid, GridToolbar, GridRowModes, GridToolbarContainer, GridActionsCellItem, GridRowEditStopReasons, GridLogicOperator } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridRowModes, GridToolbarContainer, GridActionsCellItem, GridRowEditStopReasons } from '@mui/x-data-grid';
 import { mockDataTeam } from "./mockData";
-import ModalForm from './CarForm';
-import axios from 'axios';
+import { avatars } from '../ManageStaff/avatar';
+import CustomerModalForm from './CustomerForm';
 
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,22 +18,28 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
-
 import WarningIcon from '@mui/icons-material/Warning';
+
 import { cdmApi } from '../../../misc/cdmApi';
+import axios from 'axios';
 
+//Main Page
+const ManageCustomerPage = () => {
 
-const ManageCarPage = () => {
-
-  const [rows, setRows] = useState([]);
-  const [formState, setFormState] = useState(null);
+  const [rows, setRows] = React.useState([]);
+  const [formState, setFormState] = React.useState(null);
 
   const [dataChangeFlag, setDataChangeFlag] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await cdmApi.getAllCars();
-        const addedIndexData = response.data.content.map((row, index) => ({...row, index: index + 1}));
+        const response = await cdmApi.getAllUsers(1000);
+        const filtedRoleData = response.data.content.filter((row) => row.role === "CUSTOMER");
+        filtedRoleData.forEach((row, index) => {
+          if(!row.avatar)
+            row.avatar = avatars[index % avatars.length];
+       });
+        const addedIndexData = filtedRoleData.map((row, index) => ({ ...row, index: index + 1 }));
         setRows(addedIndexData); 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -42,8 +48,8 @@ const ManageCarPage = () => {
     fetchData();
   
   }, [dataChangeFlag]);
-
   
+
 
   //Modal
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -70,9 +76,9 @@ const ManageCarPage = () => {
     delete newFormState.index;
     setFormState(newFormState);
     if(rowToEdit === null) 
-      setPopupMessage(`Do you really want to create a new car?`);
+      setPopupMessage(`Do you really want to create a new customer?`);
     else
-      setPopupMessage(`Do you really want to update car's information?`);
+      setPopupMessage(`Do you really want to update customer's information?`);
     setPopupOpen(true);
   };
 
@@ -82,19 +88,20 @@ const ManageCarPage = () => {
   };
 
   const handleYes = async () => {
-    
-    if (deletingId !== null) 
-      handleDeleteApi();
+    console.log("Yes");
+    if (deletingId !== null)
+      handleDeleteApi();   
     else 
     {
+
       const formData = new FormData();
-      formData.append("file", formState.imgSrc);
+      formData.append("file", formState.avatar);
       formData.append("upload_preset", "xuanlinh");
 
       const resUpload = await axios.post("https://api.cloudinary.com/v1_1/dbixymfbp/image/upload", formData);
-
-      setFormState({...formState, imgSrc: resUpload.data.secure_url});
-      const subFormState = {...formState, imgSrc: resUpload.data.secure_url};
+      
+      setFormState({...formState, avatar: resUpload.data.secure_url});
+      const subFormState = {...formState, avatar: resUpload.data.secure_url};
       
       if (rowToEdit === null)  
         handleCreateApi(subFormState);
@@ -109,8 +116,10 @@ const ManageCarPage = () => {
 
   const handleCreateApi = async (subFormState) => {
     try {
-      const response = await cdmApi.createCar(subFormState);
-      setRows([...rows, response.data]);
+      subFormState.role = "CUSTOMER";
+      subFormState.password = "Newuser123";
+      const response = await cdmApi.createCustomer(subFormState);
+      //setRows([...rows, response.data]);
       setDataChangeFlag(!dataChangeFlag);
       setSnackbar({ children: "Updated successfully", severity: "success" });
     } catch (error) {
@@ -121,8 +130,8 @@ const ManageCarPage = () => {
 
   const handleUpdateApi = async (subFormState) => {
     try{
-      const response = await cdmApi.updateCar(subFormState);
-      setRows(rows.map((row) => (row === rowToEdit ? response.data : row)));
+      const response = await cdmApi.updateUser(subFormState);
+      //setRows(rows.map((row) => (row === rowToEdit ? response.data : row)));
       setDataChangeFlag(!dataChangeFlag);
       setSnackbar({ children: "Updated successfully", severity: "success" });
       setRowToEdit(null);
@@ -135,8 +144,8 @@ const ManageCarPage = () => {
 
   const handleDeleteApi = async () => {
     try {
-      await cdmApi.deleteCar(deletingId);
-      setRows(rows.filter((row) => row.id !== deletingId));
+      await cdmApi.deleteUser(deletingId);
+      //setRows(rows.filter((row) => row.id !== deletingId));
       setDataChangeFlag(!dataChangeFlag);
       setSnackbar({ children: "Deleted successfully", severity: "success" });
       setDeletingId(null);
@@ -200,72 +209,79 @@ const ManageCarPage = () => {
 
   //customizer columns
   const columns = [
-    // { field: "id", headerName: "ID" },
+    //{ field: "id", headerName: "ID" },
     {
       field: "index",
       headerName: "ID",
       width: 50,
       renderCell: (params) => {
-        return <div>{params.row.index}</div>;
+        return <div className='dark:text-white'>{params.row.index}</div>;
       },
     },
     {
-      field: "imgSrc",
-      headerName: "Car",
-      width: 150,
-      cellClassName: "image-column--cell",
+      field: "avatar",
+      headerName: "Avatar",
+      width: 120,
+      cellClassName: "image-column--cell dark:text-white",
       renderCell: (params) => {
         return (
           <div >
-            {params.row.imgSrc && <img className="w-[130px] rounded-md object-cover ml-[-15px]" src={params.row.imgSrc} alt="avatar" />}
+            {(params.row.avatar && params.row.avatar.length > 10 ) ? 
+              (
+                <img
+                  className="rounded-full w-[50px]"
+                  src={params.row.avatar}
+                  alt="avatar"
+                />
+              ) :
+              (
+                <img
+                  className="rounded-full w-[50px]"
+                  src="https://t4.ftcdn.net/jpg/04/08/24/43/360_F_408244382_Ex6k7k8XYzTbiXLNJgIL8gssebpLLBZQ.jpg"
+                  alt="avatar"
+                />
+              )
+            }
           </div>
         );
       },
     },
     {
-      field: "trim",
+      field: "email",
       headerName: "Name",
-      width: 210,
-      cellClassName: "name-column--cell",
+      width: 180,
+      cellClassName: "name-column--cell dark:text-white",
       editable: true,
     },
+    // {
+    //   field: "age",
+    //   headerName: "Age",
+    //   type: "number",
+    //   width: 100,
+    //   headerAlign: "left",
+    //   align: "left",
+    //   editable: true,
+    // },
     {
-      field: "orgPrice",
-      headerName: "Original Price",
-      width: 120,
+      field: "phone_number",
+      headerName: "Phone Number",
+      width: 160,
       editable: true,
+      cellClassName: "dark:text-white"
     },
     {
-      field: "disPrice",
-      headerName: "Discounted Price",
-      width: 130,
+      field: "name",
+      headerName: "Email",
+      width: 220,
       editable: true,
+      cellClassName: "dark:text-white"
     },
     {
-      field: "tech",
-      headerName: "Technology",
-      width: 100,
+      field: "address",
+      headerName: "Address",
+      width: 250,
       editable: true,
-    },
-    
-    {
-      field: "count",
-      headerName: "Quantity",
-      width: 90,
-      editable: true,
-    },
-
-    {
-      field: "model",
-      headerName: "Model",
-      width: 100,
-      editable: true,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 100,
-      editable: true,
+      cellClassName: "dark:text-white"
     },
     {
       field: 'actions',
@@ -273,11 +289,12 @@ const ManageCarPage = () => {
       headerName: 'Actions',
       flex: 1,
       minWidth: 80,
-      cellClassName: 'actions',
-      getActions: ({ id }) => {  
+      cellClassName: 'actions dark:text-white',
+      getActions: ({ id }) => {
+  
         return [
           <GridActionsCellItem
-            icon={<EditIcon className='bg-[#1F2937] text-white rounded-md box-content p-[4px]
+          icon={<EditIcon className='bg-[#1F2937] text-white dark:bg-blue-500 dark:hover:bg-;ue-700 rounded-md box-content p-[4px]
                                        hover:bg-[#455265]'/>}
             label="Edit"
             className="textPrimary"
@@ -296,13 +313,14 @@ const ManageCarPage = () => {
     },
   ];
 
-  const [value, setValue] = React.useState(2);
+  
+
   //render
   return (
-    <div className="flex">
+    <div className="flex dark:bg-slate-800">
       <ManagerSideBar/>
       { modalOpen && ( 
-      <ModalForm 
+      <CustomerModalForm 
         closeModel={() => {setModalOpen(false); setRowToEdit(null);}}
         defaultValues={rowToEdit}        
         onSubmit={handleSubmit}
@@ -311,34 +329,31 @@ const ManageCarPage = () => {
 
       <div className='ml-8 flex-1 flex flex-col overflow-x-hidden'>
         <div className="pt-8 w-full">
-          <p className="text-4xl  font-bold">Car</p>
+          <p className="text-4xl  font-bold dark:text-white">Customer</p>
         </div>
-        <button className='self-end mr-[50px] mb-0 bg-[#232331] hover:bg-[#6d7986] rounded-md text-white font-bold w-[150px] my-2 py-2  max-lg:self-start max-lg:mt-[50px]' 
+        <button className='dark:bg-blue-500 dark:hover:bg-blue-700 self-end mr-[50px] mb-0 bg-[#000] hover:bg-[#6d7986] rounded-md text-white font-bold w-[150px] max-sm:ml-0 my-2 py-2 max-lg:self-start max-lg:mt-[40px]' 
                 onClick={() => {setModalOpen(true);}}>CREATE NEW</button>
         
         {/* Data Grid */}
         <div className="mt-[15px]">
           {renderConfirmDialog()}
-          <Box height="544px" width="100%" maxWidth="100%" sx={{
+          <Box height="544px" width="100%"  sx={{
               "& .MuiDataGrid-root" : {
                 border : "none",
               },
               "& .MuiDataGrid-cell" : {
                 borderBottom : "none",
                 fontSize: '12px',
+                
               },
               "& .name-column--cell" : {
                 // color : '#15803D',
-              },
-              "& .image-column--cell" : {
-                fontSize: '40px',
               },
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: '#607286',
                 color: '#fff',
                 borderBottom: "none",
-                fontSize: '14px',
-                
+                fontSize: '16px',
               },
               "& .MuiDataGrid-root .MuiDataGrid-row--editing .MuiDataGrid-cell": {
                 boxShadow: '0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important',
@@ -347,6 +362,7 @@ const ManageCarPage = () => {
               "& .MuiCheckbox-root": {
                 color: `${'#294bd6'} !important`,
               },
+              
             }}
           >
             <DataGrid
@@ -363,13 +379,12 @@ const ManageCarPage = () => {
                 },
                 toolbar: {
                   showQuickFilter: true,
-                  
                 },
               }}
               initialState={{
                 pagination: {
                   paginationModel: { pageSize: 25, page: 0 },
-                },                
+                },
               }}
               disableDensitySelector
               isCellEditable={() => false}
@@ -387,4 +402,4 @@ const ManageCarPage = () => {
   );
 }
 
-export default ManageCarPage;
+export default ManageCustomerPage;
