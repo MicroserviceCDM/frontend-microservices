@@ -6,6 +6,7 @@ import CardWithAreaChart from "../../../components/SimpleAreaChart/AreaChartCard
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { cdmApi } from "../../../misc/cdmApi";
+import { config } from "../../../misc/Constants";
 
 function ManagerHome() {
   const [revenue, setRevenue] = useState(0);
@@ -15,82 +16,53 @@ function ManagerHome() {
   const [numberOfOrders, setNumberOfOrders] = useState(0);
 
   const fetchInfo = async () => {
+    const headers = {
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    };
+  
     try {
-      const res = await axios.get(
-        "http://localhost:9296/api/v1/orders/getTotalRevenue",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+      // Total Revenue
+      const revenueRes = await axios.get(
+        `${config.url.API_BASE_URL}/api/v1/orders/getTotalRevenue`,
+        { headers }
       );
-      console.log("total revenue");
-      console.log(res.data);
-      setRevenue(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-
-    try {
-      const res = await axios.get(
-        "http://localhost:9296/api/v1/orders/getMonthlyRevenue",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+      setRevenue(revenueRes.data);
+  
+      // Monthly Revenue
+      const monthlyRevenueRes = await axios.get(
+        `${config.url.API_BASE_URL}/api/v1/orders/getMonthlyRevenue`,
+        { headers }
       );
-      console.log("monthly revenue");
-      console.log(res.data);
-      setMonthlyRevenue(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-
-    try {
-      const res = await cdmApi.getAllUsers();
-      setAllUsers(res.data.size);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-
-    try {
-      const res = await axios.get(
-        "http://localhost:9296/api/v1/orders/getAverageOrderValue",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+      setMonthlyRevenue(monthlyRevenueRes.data);
+  
+      // All Users
+      const usersRes = await cdmApi.getAllUsers();
+      setAllUsers(usersRes.data.size);
+  
+      // Average Order Value
+      const avgOrderRes = await axios.get(
+        `${config.url.API_BASE_URL}/api/v1/orders/getAverageOrderValue`,
+        { headers }
       );
-      setAverageOrderValue(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-
-    try {
-      const res = await axios.get(
-        "http://localhost:9296/api/v1/orders/getOrdersPerMonth",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+      setAverageOrderValue(avgOrderRes.data);
+  
+      // Orders Per Month
+      const ordersPerMonthRes = await axios.get(
+        `${config.url.API_BASE_URL}/api/v1/orders/getOrdersPerMonth`,
+        { headers }
       );
-      function getNumberOfOrdersForCurrentMonth(ordersData) {
+  
+      const getNumberOfOrdersForCurrentMonth = (ordersData) => {
         const date = new Date();
         const month = date
           .toLocaleString("en-US", { month: "long" })
           .toUpperCase();
-
-        const numberOfOrders = ordersData[month];
-        console.log("Number of orders:", numberOfOrders);
-        return numberOfOrders;
-      }
-      console.log("orders per month");
-      console.log(res.data);
-      const currentMonthOrders = getNumberOfOrdersForCurrentMonth(res.data);
+        return ordersData[month];
+      };
+  
+      const currentMonthOrders = getNumberOfOrdersForCurrentMonth(ordersPerMonthRes.data);
       setNumberOfOrders(currentMonthOrders);
+  
     } catch (error) {
       console.error("Error fetching data:", error);
     }

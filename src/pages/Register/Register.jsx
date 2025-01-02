@@ -71,9 +71,9 @@ function Register() {
     var userObject = jwt_decode(response.credential);
     console.log(userObject);
     try {
-      const name = userObject.email + "";
+      const name = userObject.family_name + " " + userObject.given_name;
       const avatar = userObject.picture;
-      const email = userObject.family_name + " " + userObject.given_name;
+      const email = userObject.email;
       const user = {
         avatar,
         name,

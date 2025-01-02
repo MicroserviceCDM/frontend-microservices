@@ -5,13 +5,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { cdmApi } from '../../../misc/cdmApi';
 import { useNavigate } from 'react-router-dom';
+import { config } from '../../../misc/Constants';
 
 function VehicleDetail() {
    const navigate = useNavigate();
    const params = useParams();
    const [data, setData] = useState([]);
 
-   const url = "http://localhost:9296/api/v1/products/getCarById/" + params.id;
+   const url = `${config.url.API_BASE_URL}/api/v1/products/getCarById/` + params.id;
    const fetchInfo = async () => {
       try {
          const res = await cdmApi.getCarById(params.id);
