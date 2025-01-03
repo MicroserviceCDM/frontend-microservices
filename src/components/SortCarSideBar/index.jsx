@@ -1,88 +1,76 @@
-import './SortCarSideBar.css'
+import React from 'react';
 
 function SortCarSideBar() {
-    const gradientBlack = 'linear-gradient(to bottom, #000000, #ffffff)';
-    const gradientRed = 'linear-gradient(to bottom, #f90000, #fff8f8)';
-    const gradientBlue = 'linear-gradient(to bottom, #ececec, #0071f9)';
-    const gradientGreen = 'linear-gradient(to bottom, #ececec, #055904)';
-    const gradientGray = 'linear-gradient(to bottom, #ffffff, #cfd1cf)';
-    return ( 
-        <>
-            <div className='hidden bg-white xl:block bg-gray-100 xl:bg-white'>
-            <select className="select-car-sort">
-                    <option value="option1">Price: Low to High</option>
-                    <option value="option2">Price: High to Low</option>
-                </select>
-                <p className="article-car-sort">Model</p>
+  const gradientBlack = 'linear-gradient(to bottom, #000000, #ffffff)';
+  const gradientRed = 'linear-gradient(to bottom, #f90000, #fff8f8)';
+  const gradientBlue = 'linear-gradient(to bottom, #ececec, #0071f9)';
+  const gradientGreen = 'linear-gradient(to bottom, #ececec, #055904)';
+  const gradientGray = 'linear-gradient(to bottom, #ffffff, #cfd1cf)';
 
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="radio"  name="radio-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}}>
-                        <p className="radio-text-car-sort">Model S</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="radio"  name="radio-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}}>
-                        <p className="radio-text-car-sort">Model 3</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="radio"  name="radio-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}}>
-                        <p className="radio-text-car-sort">Model X</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="radio" name="radio-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}} >
-                        <p className="radio-text-car-sort">Model Y</p>
-                    </div>
-                </div>
+  return (
+    <div className="hidden bg-gray-100 dark:bg-gray-800 xl:block p-4">
+      <select className="w-full border-2 border-black px-4 py-2 bg-gray-100 dark:bg-gray-900 text-black dark:text-white font-medium rounded-md mb-4">
+        <option value="option1">Price: Low to High</option>
+        <option value="option2">Price: High to Low</option>
+      </select>
 
-                <p className="article-car-sort">Trim</p>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="checkbox" name="checkbox-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}} >
-                        <p className="radio-text-car-sort">Performance All-Wheel Drive</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="checkbox" name="checkbox-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}} >
-                        <p className="radio-text-car-sort">Long Range All-Wheel Drive</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="checkbox" name="checkbox-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}} >
-                        <p className="radio-text-car-sort">Model Y All-Wheel Drive</p>
-                    </div>
-                </div>
-                <div className="container-flex">
-                    <input className="radio-car-sort" type="checkbox" name="checkbox-model"/>
-                    <div className="container-flex" style={{justifyContent: 'center', alignItems: 'center'}} >
-                        <p className="radio-text-car-sort">Model Y Rear-Wheel Drive</p>
-                    </div>
-                </div>
+      <p className="text-base font-semibold mb-2">Model</p>
+      <div className="space-y-2">
+        <label className="flex items-center">
+          <input type="radio" name="radio-model" className="form-radio h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model S</span>
+        </label>
+        <label className="flex items-center">
+          <input type="radio" name="radio-model" className="form-radio h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model 3</span>
+        </label>
+        <label className="flex items-center">
+          <input type="radio" name="radio-model" className="form-radio h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model X</span>
+        </label>
+        <label className="flex items-center">
+          <input type="radio" name="radio-model" className="form-radio h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model Y</span>
+        </label>
+      </div>
 
-                <p className="article-car-sort">Exterior Paint</p>
-                <div className="container-flex" style={{marginLeft: 10}}>
-                    <div className="color-option-car-sort" style={{backgroundImage: gradientBlack}}></div>
-                    <div className="color-option-car-sort" style={{backgroundImage: gradientRed}}></div>
-                    <div className="color-option-car-sort" style={{backgroundImage: gradientBlue}}></div>
-                    <div className="color-option-car-sort" style={{backgroundImage: gradientGreen}}></div>
-                    <div className="color-option-car-sort" style={{backgroundImage: gradientGray}}></div>
-                </div>
-                <p className="article-car-sort" >Interior Color</p>
-                <div className="container-flex" style={{marginLeft: 10}}>
-                    <div className="color-option-car-sort" style={{backgroundColor: 'black'}}></div>
-                    <div className="color-option-car-sort" style={{backgroundColor: 'white'}}></div>
-                    <div className="color-option-car-sort" style={{backgroundColor: '#7c471f'}}></div>
-                </div>
-            </div>
-        </>
-     );
+      <p className="text-base font-semibold mt-4 mb-2">Trim</p>
+      <div className="space-y-2">
+        <label className="flex items-center">
+          <input type="checkbox" name="checkbox-model" className="form-checkbox h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Performance All-Wheel Drive</span>
+        </label>
+        <label className="flex items-center">
+          <input type="checkbox" name="checkbox-model" className="form-checkbox h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Long Range All-Wheel Drive</span>
+        </label>
+        <label className="flex items-center">
+          <input type="checkbox" name="checkbox-model" className="form-checkbox h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model Y All-Wheel Drive</span>
+        </label>
+        <label className="flex items-center">
+          <input type="checkbox" name="checkbox-model" className="form-checkbox h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <span className="ml-2 text-gray-700 dark:text-gray-200">Model Y Rear-Wheel Drive</span>
+        </label>
+      </div>
+
+      <p className="text-base font-semibold mt-4 mb-2">Exterior Paint</p>
+      <div className="flex space-x-2">
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundImage: gradientBlack }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundImage: gradientRed }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundImage: gradientBlue }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundImage: gradientGreen }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundImage: gradientGray }}></button>
+      </div>
+
+      <p className="text-base font-semibold mt-4 mb-2">Interior Color</p>
+      <div className="flex space-x-2">
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundColor: 'black' }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundColor: 'white' }}></button>
+        <button type='button' className="w-12 h-12 rounded-full border border-gray-400 hover:shadow-md" style={{ backgroundColor: '#7c471f' }}></button>
+      </div>
+    </div>
+  );
 }
 
 export default SortCarSideBar;

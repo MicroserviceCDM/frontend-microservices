@@ -1,39 +1,36 @@
 import React, { useEffect, useState } from "react";
-import ManagerSideBar from "../../../layouts/components/ManagerSideBar";
+import SideBarStaff from "../../../layouts/components/SideBarStaff";
 import Box from "@mui/material/Box";
 import {
   DataGrid,
   GridToolbar,
-  GridRowModes,
-  GridToolbarContainer,
   GridActionsCellItem,
-  GridRowEditStopReasons,
 } from "@mui/x-data-grid";
-import { mockDataTeam } from "./mockData";
 import CustomerModalForm from "./CustomerForm";
-
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Close";
 import Snackbar from "@mui/material/Snackbar";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Alert from "@mui/material/Alert";
-import { avatars } from "../../Manager/ManageStaff/avatar";
+import WarningIcon from "@mui/icons-material/Warning";
 import { cdmApi } from "../../../misc/cdmApi";
-import SideBarStaff from "../../../layouts/components/SideBarStaff";
-import OtherLoading from "../../../components/OtherLoading";
+import axios from "axios";
 //Main Page
 const StaffManageCustomerPage = () => {
-  const [rows, setRows] = React.useState([]);
-  const [formState, setFormState] = React.useState(null);
-
+  const [rows, setRows] = useState([]);
   const [dataChangeFlag, setDataChangeFlag] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [rowToEdit, setRowToEdit] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [snackbar, setSnackbar] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,9 +38,7 @@ const StaffManageCustomerPage = () => {
         const filtedRoleData = response.data.content.filter(
           (row) => row.role === "CUSTOMER"
         );
-        filtedRoleData.forEach((row, index) => {
-          if (!row.avatar) row.avatar = avatars[index % avatars.length];
-        });
+        
         const addedIndexData = filtedRoleData.map((row, index) => ({
           ...row,
           index: index + 1,
@@ -56,229 +51,196 @@ const StaffManageCustomerPage = () => {
     fetchData();
   }, [dataChangeFlag]);
 
-  //Modal
-  const [modalOpen, setModalOpen] = React.useState(false);
-
-  //Popup
-  const [popupOpen, setPopupOpen] = React.useState(false);
-  const [popupMessage, setPopupMessage] = React.useState(null);
-
-  //
-  const [rowToEdit, setRowToEdit] = React.useState(null);
-  const [deletingId, setDeletingId] = React.useState(null);
-
-  //Ask before save
-
-  const [snackbar, setSnackbar] = React.useState(null);
-
   const handleCloseSnackbar = () => setSnackbar(null);
 
-  const handleEntered = () => {
-    // noButtonRef.current?.focus();
-  };
-
   const handleSubmit = (newFormState) => {
-    delete newFormState.index;
-
-    setFormState(newFormState);
-    if (rowToEdit === null)
-      setPopupMessage(`Do you really want to create a new customer?`);
-    else
-      setPopupMessage(`Do you really want to update customer's information?`);
+    const message =
+      rowToEdit === null
+        ? "Do you really want to create a new customer?"
+        : "Do you really want to update the customer's information?";
+    setPopupMessage(message);
     setPopupOpen(true);
+    
+    // Store the form state temporarily. We'll use it in handleYes
+    setRowToEdit(rowToEdit ? {...rowToEdit, ...newFormState} : newFormState); 
   };
 
   const handleNo = () => {
     setDeletingId(null);
     setPopupOpen(false);
+    setRowToEdit(null); 
   };
 
   const handleYes = async () => {
-    if (deletingId !== null) handleDeleteApi();
-    else {
-      const formData = new FormData();
-      formData.append("file", formState.avatar);
-      formData.append("upload_preset", "xuanlinh");
-
-      const resUpload = await axios.post(
-        "https://api.cloudinary.com/v1_1/dqfhfd7ts/image/upload",
-        formData
-      );
-
-      setFormState({ ...formState, avatar: resUpload.data.secure_url });
-      const subFormState = { ...formState, avatar: resUpload.data.secure_url };
-
-      if (rowToEdit === null) handleCreateApi(subFormState);
-      else handleUpdateApi(subFormState);
-    }
     setPopupOpen(false);
-    setModalOpen(false);
-  };
-
-  const handleCreateApi = async (subFormState) => {
-    try {
-      subFormState.role = "CUSTOMER";
-      subFormState.password = "Newuser123";
-      const response = await cdmApi.createCustomer(subFormState);
-      //setRows([...rows, response.data]);
-      setDataChangeFlag(!dataChangeFlag);
-      setSnackbar({ children: "Updated successfully", severity: "success" });
-    } catch (error) {
-      console.error("Error creating new product:", error);
-      setSnackbar({
-        children: "Couldn't create a new product",
-        severity: "error",
-      });
+    if (deletingId !== null) {
+      handleDeleteApi();
+    } else {
+      try {
+          const formData = new FormData();
+          formData.append("file", rowToEdit.avatar);
+          formData.append("upload_preset", "xuanlinh");
+  
+          const resUpload = await axios.post(
+            "https://api.cloudinary.com/v1_1/dqfhfd7ts/image/upload",
+            formData
+          );
+          
+          const updatedFormState = { ...rowToEdit, avatar: resUpload.data.secure_url };
+          delete updatedFormState.index;
+          if (rowToEdit.id) {
+            handleUpdateApi(updatedFormState);
+          } else {
+            handleCreateApi(updatedFormState);
+          }
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          setSnackbar({
+            children: "Couldn't upload image",
+            severity: "error",
+          });
+        }
     }
   };
 
-  const handleUpdateApi = async (subFormState) => {
+  const handleCreateApi = async (formState) => {
     try {
-      const response = await cdmApi.updateUser(subFormState);
-      //setRows(rows.map((row) => (row === rowToEdit ? response.data : row)));
-      setDataChangeFlag(!dataChangeFlag);
-      setSnackbar({ children: "Updated successfully", severity: "success" });
-      setRowToEdit(null);
+      formState.role = "CUSTOMER";
+      formState.password = "Newuser123";
+      const response = await cdmApi.createCustomer(formState);
+      setRows([...rows, response.data]);
+      setSnackbar({
+        children: "Customer created successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error updating product:", error);
-      setSnackbar({ children: "Couldn't update product", severity: "error" });
+      console.error("Error creating customer:", error);
+      setSnackbar({ children: "Couldn't create customer", severity: "error" });
+    } finally {
+      setDataChangeFlag(!dataChangeFlag);
+      setModalOpen(false);
+    }
+  };
+
+  const handleUpdateApi = async (formState) => {
+    try {
+      const response = await cdmApi.updateUser(formState);
+      setRows(
+        rows.map((row) => (row.id === formState.id ? response.data : row))
+      );
+      setSnackbar({
+        children: "Customer updated successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      setSnackbar({ children: "Couldn't update customer", severity: "error" });
+    } finally {
+      setDataChangeFlag(!dataChangeFlag);
+      setModalOpen(false);
+      setRowToEdit(null);
     }
   };
 
   const handleDeleteApi = async () => {
     try {
       await cdmApi.deleteUser(deletingId);
-      //setRows(rows.filter((row) => row.id !== deletingId));
-      setDataChangeFlag(!dataChangeFlag);
-      setSnackbar({ children: "Deleted successfully", severity: "success" });
-      setDeletingId(null);
+      setRows(rows.filter((row) => row.id !== deletingId));
+      setSnackbar({
+        children: "Customer deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error("Error deleting customer:", error);
+      setSnackbar({ children: "Couldn't delete customer", severity: "error" });
+    } finally {
+      setDataChangeFlag(!dataChangeFlag);
+      setDeletingId(null);
     }
   };
 
-  const renderConfirmDialog = () => {
-    if (!popupOpen) {
-      return null;
-    }
+  const renderConfirmDialog = () => (
+    <Dialog maxWidth="xs" open={popupOpen}>
+      <DialogTitle>
+        <WarningIcon className="text-yellow-500 mx-auto" sx={{ fontSize: 50 }} />
+      </DialogTitle>
+      <DialogContent dividers>
+        {popupMessage}
+      </DialogContent>
+      <DialogActions>
+        <div className="flex gap-6">
+          <button
+            className="bg-white border-2 border-gray-400 hover:bg-gray-400 hover:text-white dark:hover:bg-gray-600 rounded-md text-black dark:text-white font-medium w-12 py-1.5"
+            onClick={handleNo}
+          >
+            No
+          </button>
+          <button
+            className="text-white bg-blue-600 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600 rounded-md font-medium w-12 py-1.5"
+            onClick={handleYes}
+          >
+            Yes
+          </button>
+        </div>
+      </DialogActions>
+    </Dialog>
+  );
 
-    return (
-      <Dialog
-        maxWidth="xs"
-        TransitionProps={{ onEntered: handleEntered }}
-        open={popupOpen}
-      >
-        <DialogTitle style={{ display: "flex" }}>
-          <WarningIcon
-            className="text-yellow-500 mx-auto"
-            style={{ fontSize: "50px" }}
-          />
-        </DialogTitle>
-
-        <DialogContent dividers>{popupMessage}</DialogContent>
-
-        <DialogActions>
-          <div className="flex gap-6">
-            <button
-              className=" bg-white border-2 border-gray-400 hover:bg-[#a1a3a2] hover:text-white rounded-md text-black font-medium w-[50px]  my-0 py-[6px]"
-              onClick={handleNo}
-            >
-              No
-            </button>
-            <button
-              className="text-white bg-[#6A64F1] hover:bg-[#a5a2d4] rounded-md font-medium w-[50px]  my-0 py-[6px]"
-              onClick={handleYes}
-            >
-              Yes
-            </button>
-          </div>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
-  //Function button
   const handleEditClick = (id) => () => {
     setRowToEdit(rows.find((row) => row.id === id));
     setModalOpen(true);
   };
 
-  const handleDeleteClick = (id) => async () => {
-    console.log(id);
+  const handleDeleteClick = (id) => () => {
     setDeletingId(id);
-    setPopupMessage(`Do you really want to delete this car?`);
+    setPopupMessage("Do you really want to delete this customer?");
     setPopupOpen(true);
   };
 
-  //customizer columns
   const columns = [
-    //{ field: "id", headerName: "ID" },
     {
       field: "index",
       headerName: "ID",
       width: 50,
-      renderCell: (params) => {
-        return <div>{params.row.index}</div>;
-      },
+      renderCell: (params) => params.row.index,
     },
     {
       field: "avatar",
       headerName: "Avatar",
       width: 120,
-      cellClassName: "image-column--cell",
-      renderCell: (params) => {
-        return (
-          <div>
-            {params.row.avatar && params.row.avatar.length > 10 ? (
-              <img
-                className="rounded-full w-[50px]"
-                src={params.row.avatar}
-                alt="avatar"
-              />
-            ) : (
-              <img
-                className="rounded-full w-[50px]"
-                src="https://t4.ftcdn.net/jpg/04/08/24/43/360_F_408244382_Ex6k7k8XYzTbiXLNJgIL8gssebpLLBZQ.jpg"
-                alt="avatar"
-              />
-            )}
-          </div>
-        );
-      },
+      renderCell: (params) => (
+        <div>
+          <img
+            className="rounded-full w-10 h-10 object-cover"
+            src={
+              params.row.avatar
+                ? params.row.avatar
+                : "https://t4.ftcdn.net/jpg/04/08/24/43/360_F_408244382_Ex6k7k8XYzTbiXLNJgIL8gssebpLLBZQ.jpg"
+            }
+            alt="avatar"
+          />
+        </div>
+      ),
     },
     {
-      field: "email",
+      field: "name",
       headerName: "Name",
       width: 180,
-      cellClassName: "name-column--cell",
-      editable: true,
     },
-    // {
-    //   field: "age",
-    //   headerName: "Age",
-    //   type: "number",
-    //   width: 100,
-    //   headerAlign: "left",
-    //   align: "left",
-    //   editable: true,
-    // },
     {
       field: "phone_number",
       headerName: "Phone Number",
       width: 160,
-      editable: true,
     },
     {
-      field: "name",
+      field: "email",
       headerName: "Email",
       width: 220,
-      editable: true,
     },
     {
       field: "address",
       headerName: "Address",
       width: 250,
-      editable: true,
     },
     {
       field: "actions",
@@ -286,48 +248,33 @@ const StaffManageCustomerPage = () => {
       headerName: "Actions",
       flex: 1,
       minWidth: 80,
-      cellClassName: "actions",
-      getActions: ({ id }) => {
-        return [
-          <GridActionsCellItem
-            icon={
-              <EditIcon
-                className="bg-[#1F2937] text-white rounded-md box-content p-[4px]
-          hover:bg-[#455265]"
-              />
-            }
-            label="Edit"
-            className="textPrimary"
-            onClick={handleEditClick(id)}
-            color="inherit"
-          />,
-          <GridActionsCellItem
-            icon={
-              <DeleteIcon
-                className="bg-red-600 text-white rounded-md box-content p-[4px]
-                                         hover:bg-red-400"
-              />
-            }
-            label="Delete"
-            onClick={handleDeleteClick(id)}
-            color="inherit"
-          />,
-        ];
-      },
+      getActions: ({ id }) => [
+        <GridActionsCellItem
+          icon={
+            <EditIcon
+              className="bg-gray-800 text-white rounded-md p-1 hover:bg-gray-600 dark:bg-gray-700 dark:hover:bg-gray-500"
+            />
+          }
+          label="Edit"
+          onClick={handleEditClick(id)}
+          color="inherit"
+        />,
+        <GridActionsCellItem
+          icon={
+            <DeleteIcon
+              className="bg-red-600 text-white rounded-md p-1 hover:bg-red-400 dark:bg-red-700 dark:hover:bg-red-500"
+            />
+          }
+          label="Delete"
+          onClick={handleDeleteClick(id)}
+          color="inherit"
+        />,
+      ],
     },
   ];
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-    return () => clearTimeout(timeoutId);
-  }, [loading]);
-
-  //render
   return (
-    <div className="flex  bg-white dark:bg-slate-800">
+    <div className="flex bg-white dark:bg-gray-900">
       <SideBarStaff />
       {modalOpen && (
         <CustomerModalForm
@@ -342,50 +289,128 @@ const StaffManageCustomerPage = () => {
 
       <div className="ml-8 flex-1 flex flex-col overflow-x-hidden">
         <div className="pt-8 w-full">
-          <p className="text-4xl  font-bold  text-black dark:text-white ">
+          <p className="text-4xl font-bold text-gray-900 dark:text-gray-100">
             Customer
           </p>
         </div>
         <button
-          className="self-end mr-[50px] mb-0 bg-[#000] hover:bg-[#6d7986] rounded-md  dark:bg-blue-500  dark:hover:bg-blue-700 text-white font-bold w-[150px] max-sm:ml-0 my-2 py-2 max-lg:self-start max-lg:mt-[40px]"
-          onClick={() => {
-            setModalOpen(true);
-          }}
+          className="self-end mr-12 mb-0 bg-gray-800 hover:bg-gray-600 dark:bg-gray-700 dark:hover:bg-gray-500 rounded-md text-white font-bold w-36 my-2 py-2"
+          onClick={() => setModalOpen(true)}
         >
           CREATE NEW
         </button>
 
-        {/* Data Grid */}
-        <div className="mt-[15px]">
+        <div className="mt-4">
           {renderConfirmDialog()}
           <Box
             height="544px"
             width="100%"
+            maxWidth="100%"
             sx={{
               "& .MuiDataGrid-root": {
                 border: "none",
+                backgroundColor: "white", // Background color in light mode
+                borderRadius: "8px",
+                ".dark &": {
+                  backgroundColor: "#272727", // Background color in dark mode
+                },
               },
               "& .MuiDataGrid-cell": {
                 borderBottom: "none",
                 fontSize: "12px",
-              },
-              "& .name-column--cell": {
-                // color : '#15803D',
+                color: "black", // Text color in light mode
+                ".dark &": {
+                  color: "white", // Text color in dark mode
+                },
               },
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#607286",
+                backgroundColor: "#607286", // Background color in light mode
                 color: "#fff",
                 borderBottom: "none",
-                fontSize: "16px",
-              },
-              "& .MuiDataGrid-root .MuiDataGrid-row--editing .MuiDataGrid-cell":
-                {
-                  boxShadow:
-                    "0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important",
+                fontSize: "14px",
+                borderRadius: "8px 8px 0 0",
+                ".dark &": {
+                  backgroundColor: "#474747", // Background color in dark mode
                 },
-
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderRadius: "0 0 8px 8px",
+              },
+              "& .MuiDataGrid-virtualScroller": {},
+              "& .MuiDataGrid-row--editing .MuiDataGrid-cell": {
+                boxShadow:
+                  "0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important",
+              },
               "& .MuiCheckbox-root": {
-                color: `${"#294bd6"} !important`,
+                color: `#294bd6 !important`, // Checkbox color in light mode
+                ".dark &": {
+                  color: `#8ab4f8 !important`, // Checkbox color in dark mode
+                },
+              },
+              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+                outline: "none !important",
+              },
+              "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within":
+                {
+                  outline: "none !important",
+                },
+              // Light mode styles for pagination elements:
+              "& .MuiTablePagination-displayedRows": {
+                color: "black", // Text color in light mode
+                ".dark &": {
+                  color: "#fff", // Text color in dark mode
+                },
+              },
+              "& .MuiTablePagination-selectLabel": {
+                color: "black", // Text color in light mode
+                ".dark &": {
+                  color: "#fff", // Text color in dark mode
+                },
+              },
+              "& .MuiSelect-select": {
+                color: "black", // Text color in light mode
+                "&.Mui-focused": {
+                  backgroundColor: "transparent",
+                },
+                "&:focus": {
+                  backgroundColor: "transparent",
+                },
+                "&:hover": {
+                  backgroundColor: "transparent",
+                },
+                ".dark &": {
+                  color: "#fff", // Text color in dark mode
+                },
+              },
+              "& .MuiTablePagination-selectIcon": {
+                color: "black", // Icon color in light mode
+                ".dark &": {
+                  color: "#fff", // Icon color in dark mode
+                },
+              },
+              "& .MuiTablePagination-actions button": {
+                color: "black", // Button color in light mode
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.1)", // Hover effect in light mode
+                },
+                ".dark &": {
+                  color: "#fff", // Button color in dark mode
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.2)", // Hover effect in dark mode
+                  },
+                },
+              },
+              "& .MuiTablePagination-toolbar": {
+                borderTop: "1px solid rgba(224, 224, 224, 1)", // Border in light mode
+                ".dark &": {
+                  borderTop: "1px solid rgba(224, 224, 224, 0.2)", // Border in dark mode
+                },
+              },
+              "& .MuiTablePagination-root": {
+                borderTop: "1px solid rgba(224, 224, 224, 1)", // Border in light mode
+                ".dark &": {
+                  borderTop: "1px solid rgba(224, 224, 224, 0.2)", // Border in dark mode
+                },
               },
             }}
           >
@@ -410,7 +435,6 @@ const StaffManageCustomerPage = () => {
                   paginationModel: { pageSize: 25, page: 0 },
                 },
               }}
-              disableDensitySelector
               isCellEditable={() => false}
             />
             {!!snackbar && (

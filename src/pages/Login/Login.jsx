@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-import './login-register.css'
 import { Link } from "react-router-dom" 
 import Validation from "./LoginValidation"
 import { useNavigate } from 'react-router-dom';
@@ -69,7 +68,7 @@ function Login() {
         console.log(userObject);
         const email = userObject.email + '';
         try {
-            const user = { email , password: 'Dat20031234'};
+            const user = { email , password: 'SL0fiHu4pUMtt7'};
             console.log(user);
             cdmApi.authenticate(user)
             .then(async response => { 
@@ -103,7 +102,7 @@ function Login() {
     useEffect(() => {
       /* global google */ 
         google.accounts.id.initialize({
-            client_id: '127046372503-fcf9va4r603a399qvuvnms0pk7rpug0e.apps.googleusercontent.com',
+            client_id: '1087921870995-maue4kd2d8s140rcubo3sscnc5uvqdpt.apps.googleusercontent.com',
             callback: handleCallbackResponse
         });
         google.accounts.id.renderButton(
@@ -142,7 +141,7 @@ function Login() {
         <>
             {loading && <Loading setOpenModal={setLoading} />}
 
-            <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-8 lg:px-8">
+            <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-8 lg:px-8 bg-white">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
                 <img
                 className="mx-auto h-32 w-auto"

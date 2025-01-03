@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { Snackbar } from "@mui/material";
-import Alert from "@mui/material/Alert";
+import { Snackbar, Alert } from "@mui/material";
 import { cdmApi } from "../../../../misc/cdmApi";
 
 function VoucherForm({ setOpenModal }) {
@@ -13,116 +12,104 @@ function VoucherForm({ setOpenModal }) {
   const [snackbar, setSnackbar] = React.useState(null);
   const handleCloseSnackbar = () => setSnackbar(null);
 
-  function handleClick() {
-    if (code === "" || description === "" || expDate === "" || per === 0) {
+  async function handleClick() {
+    if (!code || !description || !expDate || !per) {
       setSnackbar({
-        children: "Please fill all field above!",
+        children: "Please fill all fields!",
         severity: "error",
       });
-    } else {
-      try {
-        const today = new Date();
+      return;
+    }
 
-        const voucher = {
-          code: code,
-          discount: per,
-          expirationDate: expDate,
-          title: "",
-          description: description,
-        };
-        cdmApi.createVoucher(voucher);
-        setSnackbar({
-          children: "Add new voucher successful!",
-          severity: "success",
-        });
-        window.location.reload();
-      } catch (error) {
-        console.log(error);
-      }
+    try {
+      const voucher = {
+        code: code,
+        discount: per,
+        expirationDate: expDate,
+        title: "", // You can add a title input if needed
+        description: description,
+      };
+      await cdmApi.createVoucher(voucher);
+      setSnackbar({
+        children: "Add new voucher successful!",
+        severity: "success",
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      setSnackbar({
+        children: "Failed to add voucher!",
+        severity: "error",
+      });
     }
   }
 
   return (
-    <div className="modalBackground ">
-      <div className="modalContainer w-[35vw]">
-        <span className="titleCloseBtn">
-          <button
-            onClick={() => {
-              setOpenModal(false);
-            }}
-          >
-            <FontAwesomeIcon className="text-black" icon={faClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-8 rounded-lg w-full max-w-md">
+        <div className="flex justify-end">
+          <button onClick={() => setOpenModal(false)}>
+            <FontAwesomeIcon icon={faClose} className="text-gray-700" />
           </button>
-        </span>
-        <div className="w-full max-w-xs mx-auto " style={{ marginTop: -25 }}>
-          <div className="px-8 pt-6 pb-8 mb-4 bg-white rounded">
-            <div className="mb-4">
-              <label
-                className="block mb-2 text-sm font-bold text-gray-700"
-                for="name"
-              >
-                Code
-              </label>
-              <input
-                onChange={(e) => setCode(e.target.value)}
-                className="bg-white text-sm w-full px-3 py-2.5 leading-tight text-gray-700 border rounded appearance-none focus:outline-none"
-                id="name"
-                type="text"
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                className="block mb-2 text-sm font-bold text-gray-700"
-                for="email"
-              >
-                Percentage
-              </label>
-              <input
-                onChange={(e) => setPer(e.target.value)}
-                className="text-sm py-2.5 bg-white  w-full px-3 leading-tight text-gray-700 border rounded appearance-none focus:outline-none"
-                id="email"
-                type="text"
-              />
-            </div>
-            <div className="mb-6">
-              <label
-                className="block mb-2 text-sm font-bold text-gray-700"
-                for="message"
-              >
-                Description
-              </label>
-              <textarea
-                onChange={(e) => setDescription(e.target.value)}
-                className="bg-white  w-full px-3 py-2 leading-tight text-gray-700 border rounded appearance-none focus:outline-none"
-                id="message"
-              ></textarea>
-            </div>
-            <div className="mb-6">
-              <label
-                className="block mb-2 text-sm font-bold text-gray-700"
-                for="message"
-              >
-                Exp Date
-              </label>
-              <input
-                onChange={(e) => setExpDate(e.target.value)}
-                className="text-sm bg-white  w-full px-3 py-2.5 leading-tight text-gray-700 border rounded appearance-none focus:outline-none"
-                id="message"
-                type="date"
-              ></input>
-            </div>
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => handleClick()}
-                className="ml-auto px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none"
-                type="submit"
-              >
-                Send
-              </button>
-            </div>
-          </div>
+        </div>
+        <div className="mt-4">
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Code
+          </label>
+          <input
+            type="text"
+            id="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="mt-4">
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Percentage
+          </label>
+          <input
+            type="number"
+            id="percentage"
+            value={per}
+            onChange={(e) => setPer(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="mt-4">
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="4"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+        <div className="mt-4">
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Exp Date
+          </label>
+          <input
+            type="date"
+            id="expDate"
+            value={expDate}
+            onChange={(e) => setExpDate(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleClick}
+            className="px-6 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none"
+          >
+            Send
+          </button>
         </div>
       </div>
+
       {!!snackbar && (
         <Snackbar
           open

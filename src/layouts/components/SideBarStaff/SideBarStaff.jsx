@@ -1,23 +1,9 @@
-import "./SideBarStaff.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHouse,
-  faRightFromBracket,
-  faUser,
-  faFileLines,
-  faUsers,
-  faBagShopping,
-} from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
-import EarbudsBatteryOutlinedIcon from "@mui/icons-material/EarbudsBatteryOutlined";
 import config from "../../../config";
 import {
-  ArrowRightCircleIcon,
   ArrowRightOnRectangleIcon,
   HomeIcon,
   NewspaperIcon,
-  PaperClipIcon,
   ShoppingBagIcon,
   TicketIcon,
   UserCircleIcon,
@@ -64,16 +50,6 @@ function SideBarStaff() {
       title: "Voucher",
       to: config.routes.staffcoupon,
     },
-    // {
-    //   icon: <EarbudsBatteryOutlinedIcon className='w-6 h-auto' />,
-    //   title: 'Products',
-    //   to: config.routes.staffshop
-    // },
-    // {
-    //   icon: <DirectionsCarFilledOutlinedIcon className='w-6 h-auto' />,
-    //   title: 'Inventories',
-    //   to: config.routes.staffcar
-    // },
     {
       icon: (
         <ArrowRightOnRectangleIcon className="w-6 h-auto  text-black dark:text-white" />
@@ -91,34 +67,22 @@ function SideBarStaff() {
     }
   };
   return (
-    <div style={{ height: "auto" }}>
-      <div className="flex flex-col items-center h-4/5 mt-24 hidden lg:block">
+    <div className="hidden lg:block h-screen w-64 bg-gray-100 dark:bg-gray-800 p-4">
+      <div className="flex flex-col space-y-4">
         {sidebarItem.map((item, index) => (
-          <div key={index}>
-            <Link
-              to={item.to}
-              className="no-decoration"
-              onClick={() => handleClick(item.title)}
-            >
-              <div
-                className={`sidebar-item-cus hover:bg-gray-200 dark:hover:bg-gray-600 ${
-                  location.pathname === item.to
-                    ? "bg-gray-200 dark:bg-gray-600"
-                    : "bg-white dark:bg-slate-800 "
-                } `}
-              >
-                {item.icon}
-                <div className="flex justify-center items-center">
-                  <p
-                    className="ml-8 text-black dark:text-white"
-                    style={{ fontSize: 18 }}
-                  >
-                    {item.title}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
+          <Link
+            key={index}
+            to={item.to}
+            className={`flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-200 no-underline hover:bg-gray-200 dark:hover:bg-gray-700 ${
+              location.pathname === item.to
+                ? "bg-gray-200 dark:bg-gray-700"
+                : ""
+            }`}
+            onClick={() => handleClick(item.title)}
+          >
+            {item.icon}
+            <p className="ml-4 text-base font-medium">{item.title}</p>
+          </Link>
         ))}
       </div>
     </div>

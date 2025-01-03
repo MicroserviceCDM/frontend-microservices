@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import './searchbar.css';
+// import './searchbar.css';
 function index() {
   useEffect(() => {});
 

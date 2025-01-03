@@ -326,35 +326,113 @@ const ManageShopPage = () => {
         {/* Data Grid */}
         <div className="mt-[15px]">
           {renderConfirmDialog()}
-          <Box height="544px" width="100%" maxWidth="100%" sx={{
-              "& .MuiDataGrid-root" : {
-                border : "none",
+          <Box height="544px" width="100%" maxWidth="100%" 
+            sx={{
+              '& .MuiDataGrid-root': {
+                border: 'none',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                '.dark &': {
+                    backgroundColor: '#272727',
+                  },
               },
-              "& .MuiDataGrid-cell" : {
-                borderBottom : "none",
+              '& .MuiDataGrid-cell': {
+                borderBottom: 'none',
                 fontSize: '12px',
+                color: 'black',
+                '.dark &': {
+                    color: 'white',
+                }
               },
-              "& .name-column--cell" : {
-                // color : '#15803D',
-              },
-              "& .image-column--cell" : {
-                fontSize: '40px',
-              },
-              "& .MuiDataGrid-columnHeaders": {
+              '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#607286',
                 color: '#fff',
-                borderBottom: "none",
+                borderBottom: 'none',
                 fontSize: '14px',
-                
+                borderRadius: '8px 8px 0 0',
+                '.dark &': {
+                    backgroundColor: '#474747',
+                }
               },
-              "& .MuiDataGrid-root .MuiDataGrid-row--editing .MuiDataGrid-cell": {
-                boxShadow: '0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important',
+              '& .MuiDataGrid-footerContainer': {
+                borderRadius: '0 0 8px 8px',
               },
-              
-              "& .MuiCheckbox-root": {
-                color: `${'#294bd6'} !important`,
+              '& .MuiDataGrid-virtualScroller': {
               },
-              
+              '& .MuiDataGrid-row--editing .MuiDataGrid-cell': {
+                boxShadow:
+                  '0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important',
+              },
+              '& .MuiCheckbox-root': {
+                color: `#294bd6 !important`,
+                '.dark &': {
+                    color: `#8ab4f8 !important`,
+                }
+              },
+              '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+                outline: 'none !important',
+              },
+              '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+                outline: 'none !important',
+              },
+              '& .MuiTablePagination-displayedRows': {
+                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                '.dark &': {
+                    color: '#fff', // White text color in dark mode
+                }
+              },
+              '& .MuiTablePagination-selectLabel': {
+                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                '.dark &': {
+                    color: '#fff', // White text color in dark mode
+                }
+              },
+              '& .MuiSelect-select': {
+                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                '.dark &': {
+                    color: '#fff', // White text color in dark mode
+                    
+                },
+                '&.Mui-focused': {
+                    backgroundColor: 'transparent', // Remove the default background on focus
+                },
+                '&:focus': {
+                    backgroundColor: 'transparent', // Remove the default background on focus
+                },
+                '&:hover': {
+                  backgroundColor: 'transparent', // Remove the default background on hover
+                },
+              },
+              '& .MuiTablePagination-selectIcon': {
+                color: 'white',
+                '.dark &': {
+                    color: '#fff', // White icon color in dark mode
+                }
+              },
+              '& .MuiTablePagination-actions button': {
+                color: 'white',
+                '.dark &': {
+                    color: '#fff', // White icon color in dark mode
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)', // Add a subtle hover effect
+                  '.dark &': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Add a subtle hover effect in dark mode
+                  }
+                }
+              },
+              '& .MuiTablePagination-toolbar': {
+                borderTop: '1px solid rgba(224, 224, 224, 1)',
+                '.dark &': {
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', // Lighter border in dark mode
+                }
+              },
+              '& .MuiTablePagination-root': {
+                borderTop: '1px solid rgba(224, 224, 224, 1)',
+                '.dark &': {
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', // Lighter border in dark mode
+                }
+              },
             }}
           >
             <DataGrid

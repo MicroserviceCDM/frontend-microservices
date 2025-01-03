@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "../Login/login-register.css";
 import { Link } from "react-router-dom";
 import Validation from "./RegisterValidation";
 import { cdmApi } from "../../misc/cdmApi";
@@ -71,16 +70,16 @@ function Register() {
     var userObject = jwt_decode(response.credential);
     console.log(userObject);
     try {
-      const name = userObject.family_name + " " + userObject.given_name;
+      const name = userObject.email + "";
       const avatar = userObject.picture;
-      const email = userObject.email;
+      const email = userObject.family_name + " " + userObject.given_name;
       const user = {
         avatar,
         name,
         email,
         phone,
         address,
-        password: "Dat20031234",
+        password: "SL0fiHu4pUMtt7",
         role: "CUSTOMER",
       };
       console.log(user);
@@ -100,21 +99,20 @@ function Register() {
   }
 
   useEffect(() => {
-    /* global google */
-    google.accounts.id.initialize({
-      client_id:
-        "127046372503-fcf9va4r603a399qvuvnms0pk7rpug0e.apps.googleusercontent.com",
-      callback: handleCallbackResponse,
-    });
-    google.accounts.id.renderButton(document.getElementById("signInDiv"), {
-      theme: "outline",
-      size: "large",
-    });
-  }, []);
+        /* global google */ 
+          google.accounts.id.initialize({
+              client_id: '1087921870995-maue4kd2d8s140rcubo3sscnc5uvqdpt.apps.googleusercontent.com',
+              callback: handleCallbackResponse
+          });
+          google.accounts.id.renderButton(
+              document.getElementById('signInDiv'),
+              { theme: "outline", size: "large"}
+          );
+      }, []);
 
   return (
     <>
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-4 lg:px-8">
+      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-4 lg:px-8 bg-white">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
             className="mx-auto h-32 w-auto"

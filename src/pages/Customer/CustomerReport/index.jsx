@@ -1,19 +1,15 @@
 import SideBar from "../../../layouts/components/sideBar/SideBar";
-import "./CustomerReport.css";
-import React, { useEffect, useState } from "react";
-import { useRef } from "react";
+import React, { useState, useRef } from "react";
 import { cdmApi } from "../../../misc/cdmApi";
-import { Checkbox, Navbar } from "@material-tailwind/react";
-import ImageUploading from 'react-images-uploading';
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare, faRectangleXmark, faUpload, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { Check, CheckRounded } from "@mui/icons-material";
-import axios, { Axios } from "axios";
-import DragAndDrop from "../../../components/DragAndDrop";
-import { Snackbar } from "@mui/material";
-import Alert from "@mui/material/Alert";
-import Loading from "../../../components/Loading";
-import OtherLoading from "../../../components/OtherLoading"
+import { faUpload, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Snackbar, Alert } from "@mui/material";
+import { Checkbox } from "@/components/ui/checkbox";
+import OtherLoading from "@/components/OtherLoading";
 
 function CustomerReport() {
   const [snackbar, setSnackbar] = React.useState(null);
@@ -21,72 +17,92 @@ function CustomerReport() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [userId, setUserId] = useState("");
   const [file, setFile] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
-  const fileInput = useRef(null)
+  const fileInput = useRef(null);
   const user = JSON.parse(localStorage.getItem("currentUser"));
   const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
 
-  let img = "";
-  const uploadImages = async (thing) => {
-    const image = new FormData()
+  const uploadImages = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "cdmpreset");
 
-    image.append("file", thing)
-    image. append("cloud_name", "droondbdu")
-    image. append("upload_preset", "cdmpreset")
-    
-    const response = await fetch("https://api.cloudinary.com/v1_1/droondbdu/image/upload", 
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/droondbdu/image/upload",
         {
-          method: "post",
-          body: image
+          method: "POST",
+          body: formData,
         }
-    )
-    const imgData = await response.json();
-    img = imgData.url.toString();
-    console.log(img);
-    //img = imgData.url.jsxToString();  
-    // console.log(imgData.url);
-  };
-
-  const handleChange = (event) => {
-    setReport({ ...report, [event.target.name]: event.target.value });
+      );
+      const imgData = await response.json();
+      return imgData.url.toString();
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    uploadImages(img);
-    console.log(img);
-    const userId = user.id;
-    const report = { title, description, userId, image: img, type: "USER" };
-    if(title == "" || description == "")
-    {
-      setSnackbar({ children: "Plese describe your problem", severity: "error" });
+    if (title === "" || description === "") {
+      setSnackbar({
+        children: "Please describe your problem",
+        severity: "error",
+      });
       return;
     }
-    await cdmApi.createCustomerReport(report)
-      .then((response) => {
-        // setSnackbar({ children: "Your report is sent", severity: "success" });
-        // // window.location.reload() 
-        setLoading(true);
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
+
+    try {
+      setLoading(true);
+      let imgUrl = "";
+      if (file) {
+        imgUrl = await uploadImages(file);
+      }
+
+      const userId = user.id;
+      const report = {
+        title,
+        description,
+        userId,
+        image: imgUrl,
+        type: "USER",
+      };
+
+      await cdmApi.createCustomerReport(report);
+      setTitle("");
+      setDescription("");
+      setFile("");
+      setImagePreviewUrl("");
+      setSelectedOption(null);
+
+      setSnackbar({
+        children: "Your report is sent",
+        severity: "success",
       });
+    } catch (error) {
+      console.error(error);
+      setSnackbar({
+        children: "Failed to send report",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Modified handleRadioChange
   const handleRadioChange = (value) => {
     setSelectedOption(value);
     switch (value) {
-      case 'website':
+      case "website":
         setTitle("Website Problem");
         break;
-      case 'service':
+      case "service":
         setTitle("Service Problem");
         break;
-      case 'product':
+      case "product":
         setTitle("Product Problem");
         break;
       default:
@@ -95,99 +111,178 @@ function CustomerReport() {
     }
   };
 
-  useEffect(() => {
-    if(!loading)
-        return;
-    const timeoutId = setTimeout(() => {
-        setLoading(false);
-        setSnackbar({ children: "Your report is sent", severity: "success" });
-        //window.location.reload() 
-      }, 3000);
-      return () => clearTimeout(timeoutId);
-  }, [loading]);
+  const handleImageChange = (e) => {
+    e.preventDefault();
+    let reader = new FileReader();
+    let file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      reader.onloadend = () => {
+        setFile(file);
+        setImagePreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSnackbar({
+        children: "Please select an image file",
+        severity: "error",
+      });
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInput.current.click();
+  };
 
   return (
-    <>            
-        {loading && <OtherLoading setOpenModal={setLoading} />}
+    <>
+      {loading && <OtherLoading />}
+      <div className="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
+        <SideBar />
+        <div className="flex-1 p-10">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            Report Problem
+          </h1>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Which of the following options best describes the type of issue you
+            are experiencing?
+          </p>
+          <RadioGroup
+            value={selectedOption}
+            onValueChange={handleRadioChange} // Correctly pass the function reference
+            className="mb-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <RadioGroupItem
+                value="website"
+                id="website"
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor="website"
+                className="flex items-center justify-between w-full p-4 text-gray-600 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 dark:peer-checked:text-gray-300 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+              >
+                Website Problem
+              </Label>
 
-        <div className="flex bg-white dark:bg-slate-800">
-            <SideBar />
-            <div style={{ marginLeft: 40, width: "100vw" }}>
-                  <h1 className="font-medium text-3xl mt-16 text-black dark:text-white">Report Problem</h1>
-                  <p className="mt-8 xl:mr-2 mr-4 text-black dark:text-white">Which of the following options best describes the type of issue you are experiencing</p>
-                  <div className="flex flex-col xl:ml-8 ml-2">
-                      <div class="inline-flex items-center">
-                          <label class="relative flex items-center p-3 rounded-full cursor-pointer" htmlFor="html">
-                            <input name="type" type="radio" 
-                              class="before:content[''] peer relative dark:checked:border-white h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-gray-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-gray-900 checked:before:bg-gray-900 hover:before:opacity-10"
-                              id="html" onChange={() => handleRadioChange('website')}
-                              checked={selectedOption === 'website'}/>
-                            <span
-                              class="absolute text-gray-900 dark:text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
-                                <circle data-name="ellipse" cx="8" cy="8" r="8"></circle>
-                              </svg>
-                            </span>
-                          </label>
-                          <label class="mt-px font-light text-gray-700 dark:text-white cursor-pointer select-none" htmlFor="html">
-                            Website Problem
-                          </label>
-                        </div>
-                        <div class="inline-flex items-center">
-                          <label class="relative flex items-center p-3 rounded-full cursor-pointer" htmlFor="html">
-                            <input name="type" type="radio" 
-                              class="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-gray-900 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity dark:checked:border-white checked:border-gray-900 checked:before:bg-gray-900 hover:before:opacity-10"
-                              id="html" onChange={() => handleRadioChange('service')}
-                              checked={selectedOption === 'service'}/>
-                            <span
-                              class="absolute text-gray-900 dark:text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
-                                <circle data-name="ellipse" cx="8" cy="8" r="8"></circle>
-                              </svg>
-                            </span>
-                          </label>
-                          <label class="mt-px font-light ext-gray-700 dark:text-white cursor-pointer select-none" htmlFor="html">
-                            Service Problem
-                          </label>
-                        </div>
-                        <div class="inline-flex items-center">
-                          <label class="relative flex items-center p-3 rounded-full cursor-pointer" htmlFor="react">
-                            <input name="type" type="radio" 
-                              class="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-full border border-blue-gray-200 text-gray-900 dark:text-white dark:border-white transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-gray-900 dark:checked:border-white checked:before:bg-gray-900 hover:before:opacity-10"
-                              id="react" onChange={() => handleRadioChange('product')}
-                              checked={selectedOption === 'product'}/>
-                            <span
-                              class="absolute text-gray-900 dark:text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 " viewBox="0 0 16 16" fill="currentColor">
-                                <circle data-name="ellipse" cx="8" cy="8" r="8"></circle>
-                              </svg>
-                            </span>
-                          </label>
-                          <label class="mt-px font-light ext-gray-700 dark:text-white cursor-pointer select-none" htmlFor="react">
-                            Product Problem
-                          </label>
-                        </div>
-                  </div>
-                  <p className="mt-4 xl:mr-2 mr-4 text-black dark:text-white">Please describe the problem you are experiencing in the space below. Be as descriptive as possible so we can be sure to help you as best as we can.</p>
-                  <textarea onChange={(e) => setDescription(e.target.value)} rows="5" className="bg-white dark:bg-gray-600 p-6 mt-4 mr-2 xl:mr-24 block p-2.5 w-4/5 text-sm text-black rounded-lg border border-gray-200 focus:border-black bg-white" placeholder="Write your thoughts here..."></textarea>
-                  <p className="mt-4 xl:mr-2 mr-4 text-black dark:text-white">Attach Image (if neccessary)</p>
-                  <DragAndDrop  uploadImage={uploadImages}/>
-                  <p className="mt-4 xl:mr-2 mr-4 text-black dark:text-white">How would you like us to contact you? Please select an option from the list below.</p>
-                  <div className="flex flex-col xl:ml-8 ml-2">
-                        <div className="flex"><Checkbox className="bg-black dark:bg-transparent" color="blue" defaultChecked /><label className="mt-2.5 text-black dark:text-white" htmlFor="">Phone Call</label></div>
-                        <div className="flex"><Checkbox className="bg-black dark:bg-transparent" color="blue"  /><label className="mt-2.5 text-black dark:text-white" htmlFor="">Text Message</label></div>
-                        <div className="flex"><Checkbox className="bg-black dark:bg-transparent" color="blue"  /><label className="mt-2.5 text-black dark:text-white" htmlFor="">Email Address</label></div>
-                  </div>
-                  <button onClick={handleSubmit} class="mt-2 mb-64 bg-black dark:bg-blue-500 hover:bg-gray-700 dark:hover:bg-blue-700  text-white font-bold py-2 px-4 rounded text-center mr-2">
-                        Submit
-                  </button>
-                 </div>
-                 {!!snackbar && (
-              <Snackbar open onClose={handleCloseSnackbar} autoHideDuration={6000} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-                <Alert {...snackbar} onClose={handleCloseSnackbar} />
-              </Snackbar>
+              <RadioGroupItem
+                value="service"
+                id="service"
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor="service"
+                className="flex items-center justify-between w-full p-4 text-gray-600 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 dark:peer-checked:text-gray-300 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+              >
+                Service Problem
+              </Label>
+
+              <RadioGroupItem
+                value="product"
+                id="product"
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor="product"
+                className="flex items-center justify-between w-full p-4 text-gray-600 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 dark:peer-checked:text-gray-300 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+              >
+                Product Problem
+              </Label>
+            </div>
+          </RadioGroup>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Please describe the problem you are experiencing in the space below.
+            Be as descriptive as possible so we can be sure to help you as best
+            as we can.
+          </p>
+          {title && (
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {title}
+            </h2>
+          )}
+          <Textarea
+            placeholder="Write your thoughts here..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="mb-4 p-4" // Added padding here
+            rows={5}
+          />
+          <div className="flex items-center mb-4">
+            <Button
+              variant="outline"
+              onClick={triggerFileInput}
+              className="inline-flex items-center text-gray-600"
+            >
+              <FontAwesomeIcon icon={faUpload} className="mr-2" />
+              Attach Image
+            </Button>
+            <input
+              type="file"
+              ref={fileInput}
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            {imagePreviewUrl && (
+              <img
+                src={imagePreviewUrl}
+                alt="Preview"
+                className="h-20 ml-4 rounded-md"
+              />
             )}
+          </div>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            How would you like us to contact you? Please select an option from
+            the list below.
+          </p>
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center">
+              <Checkbox
+                defaultChecked
+                className="text-blue-600 dark:text-blue-500"
+              />
+              <Label className="ml-2 text-gray-700 dark:text-gray-300">
+                Phone Call
+              </Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+              className="text-blue-600 dark:text-blue-500" 
+              />
+              <Label className="ml-2 text-gray-700 dark:text-gray-300">
+                Text Message
+              </Label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+              className="text-blue-600 dark:text-blue-500" 
+              />
+              <Label className="ml-2 text-gray-700 dark:text-gray-300">
+                Email Address
+              </Label>
+            </div>
+          </div>
+          <Button
+            onClick={handleSubmit}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+            disabled={loading}
+          >
+            {loading && (
+              <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
+            )}
+            Submit
+          </Button>
         </div>
+      </div>
+
+      {!!snackbar && (
+        <Snackbar
+          open
+          onClose={handleCloseSnackbar}
+          autoHideDuration={6000}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert {...snackbar} onClose={handleCloseSnackbar} />
+        </Snackbar>
+      )}
     </>
   );
 }

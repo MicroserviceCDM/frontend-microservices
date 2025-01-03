@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
-import "./NavBarStaff.css";
+// import "./NavBarStaff.css";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -11,8 +11,6 @@ import {
   MoonIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
-import EarbudsBatteryOutlinedIcon from "@mui/icons-material/EarbudsBatteryOutlined";
 
 const navigation = [
   // { name: 'Vehicle', href: '/vehicle', current: false },
