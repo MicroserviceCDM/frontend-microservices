@@ -1,85 +1,112 @@
-import "../../../components/CarCard/CarCard.css";
-import "./ManagerProfile.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCamera,
-  faPenToSquare,
-  faPencil,
-} from "@fortawesome/free-solid-svg-icons";
-import { cdmApi } from "../../../misc/cdmApi";
-import React, { useEffect, useState } from "react";
-import  Alert from "@mui/material/Alert";
-import { Snackbar } from "@mui/material";
-import OtherLoading from "../../../components/OtherLoading"
 import ManagerSideBar from "../../../layouts/components/ManagerSideBar";
-function CustomerProfile() {
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { cdmApi } from "../../../misc/cdmApi";
+import React, { useEffect, useState, useRef } from "react";
+import Alert from "@mui/material/Alert";
+import { Snackbar } from "@mui/material";
+
+function ManagerProfile() {
   const [userData, setUserData] = useState(
-    JSON.parse(localStorage.getItem("currentUser")) || []
-  );
+    JSON.parse(localStorage.getItem("currentUser")) || {}
+  ); // Initialize as an empty object
   const [user, setUser] = useState({});
-  const [id, setId] = useState(userData.id);
-  const [avatar, setAvatar] = useState(userData.avatar);
-  const [name, setName] = useState(userData.username);
-  const [email, setEmail] = useState(userData.email);
-  const [phone, setPhone] = useState(userData.phoneNumber);
-  const [address, setAddress] = useState(userData.address);
-  const [password, setPassword] = useState();
-  const [newPassword, setNewPassword] = useState();
-  const [confirmNewPassword, setConfirmNewPassword] = useState();
-  const [snackbar, setSnackbar] = React.useState(null);
-  const handleCloseSnackbar = () => setSnackbar(null);
+  const [id, setId] = useState(userData.id || ""); // Initialize with empty strings to avoid undefined
+  const [avatar, setAvatar] = useState(userData.avatar || "");
+  const [name, setName] = useState(userData.username || "");
+  const [email, setEmail] = useState(userData.email || "");
+  const [phone, setPhone] = useState(userData.phoneNumber || "");
+  const [address, setAddress] = useState(userData.address || "");
+  const [password, setPassword] = useState(""); // Initialize password fields as empty strings
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [snackbar, setSnackbar] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState("accessories");
+  const fileInputRef = useRef(null); // Ref for the file input
+
+  const handleCloseSnackbar = () => setSnackbar(null);
 
   const getUserMe = async () => {
-    let response = await cdmApi.getUserMe(userData.username);
-    setUser(response.data);
-    setAvatar(response.data.avatar);
-    setName(response.data.username);
-    setEmail(response.data.email);
-    setPhone(response.data.phoneNumber);
-    setAddress(response.data.address);
+    try {
+      let response = await cdmApi.getUserMe(userData.username);
+      setUser(response.data);
+      // Set the state after successfully fetching data
+      setId(response.data.id);
+      setAvatar(response.data.avatar);
+      setName(response.data.username);
+      setEmail(response.data.email);
+      setPhone(response.data.phoneNumber);
+      setAddress(response.data.address);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
   };
 
   const handleSubmitUserData = async (event) => {
     event.preventDefault();
-    console.log(id);
     try {
       setLoading(true);
+      const updatedUser = { id, avatar, name, email, phone, address }; // Use updated state values
+      await cdmApi.updateUser(updatedUser);
+      // Update local storage after successful API call
+      const updatedUserData = { ...userData, ...updatedUser };
+      localStorage.setItem("currentUser", JSON.stringify(updatedUserData));
+      setUserData(updatedUserData);
 
-      const user = { id, avatar, name, email, phone, address };
-      await cdmApi.updateUser(user);
-      setSnackbar({ children: "Update personal information successfully!", severity: "success" });
-
+      setSnackbar({
+        children: "Update personal information successfully!",
+        severity: "success",
+      });
     } catch (error) {
-      setSnackbar({ children: "Update personal information fail!", severity: "error" });
+      console.error("Error updating user data:", error);
+      setSnackbar({
+        children: "Update personal information fail!",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleChangePassword = async (event) => {
     event.preventDefault();
-    if(password == null || newPassword == null || confirmNewPassword == null)
-    {
-      setSnackbar({ children: "These field cannot be null!", severity: "warning" });
+    if (!password || !newPassword || !confirmNewPassword) {
+      setSnackbar({
+        children: "These field cannot be null!",
+        severity: "warning",
+      });
       return;
     }
     if (password === newPassword) {
-      setSnackbar({ children: "New password and current password are the same!", severity: "warning" });
+      setSnackbar({
+        children: "New password and current password are the same!",
+        severity: "warning",
+      });
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      setSnackbar({ children: "New password and confirm new password are not match!", severity: "warning" });
+      setSnackbar({
+        children: "New password and confirm new password are not match!",
+        severity: "warning",
+      });
       return;
     }
     try {
       setLoading(true);
-      const user = { id, password, newPassword, confirmNewPassword };
-      await cdmApi.changePassword(user);
-      setSnackbar({ children: "Change password successfully!", severity: "success" });
-      //Document.getElementById("cr").value = "";
+      const userPasswordData = { id, password, newPassword };
+      await cdmApi.changePassword(userPasswordData);
+      setSnackbar({
+        children: "Change password successfully!",
+        severity: "success",
+      });
+      setPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
     } catch (error) {
+      console.error("Error changing password:", error);
       setSnackbar({ children: "Change password failed!", severity: "error" });
-
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,271 +114,248 @@ function CustomerProfile() {
     getUserMe();
   }, []);
 
-  useEffect(() => {
-    setId(userData.id);
-    setAvatar(user.avatar);
-    setName(user.username);
-    setEmail(user.email);
-    setPhone(user.phoneNumber);
-    setAddress(user.address);
-    console.log(user);
-  }, [user]);
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const fileInput = document.getElementById("avatar-upload");
-    fileInput.addEventListener("change", handleFileUpload);
-
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      // Handle the file upload logic later =)
-    }
-  });
-
-  const handleMouseEnter = () => {
-    const avar = document.getElementById("avartar");
-    avar.style.opacity = 0.5;
-  };
-
-  const handleMouseLeave = () => {
-    const avar = document.getElementById("avartar");
-    avar.style.opacity = 1;
-  };
-
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
-
         setAvatar(reader.result);
       };
       reader.readAsDataURL(file);
     } else {
-      alert('Please select an image file.');
+      setSnackbar({ children: "Please select an image file.", severity: "warning" });
     }
   };
 
   const triggerFileInput = () => {
-    const fileInput = document.getElementById("avatar-upload");
-    fileInput.click();
+    fileInputRef.current.click(); // Use the ref to trigger the click
   };
 
-  useEffect(() => {
-    if(!loading)
-        return;
-    const timeoutId = setTimeout(() => {
-        
-       setLoading(false);
-    }, 2000);
-    return () => clearTimeout(timeoutId);
-}, [loading]);
-
   return (
-    <>
-      {loading && <OtherLoading setOpenModal={setLoading}/>}
-
-      <div className="flex bg-white dark:bg-slate-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex">
         <ManagerSideBar />
-        <div style={{ marginLeft: 40, width: "100vw" }} >
-          <h1 className="font-medium text-3xl mt-16 text-black dark:text-white">Profile Settings</h1>
-          <div className="flex">
-            <div className="flex-2">
-              <label for="avatar-upload" className="avatar-container mt-2">
-                <img
-                  src={avatar}
-                  alt="avatar"
-                  className="avatar-input"
-                  id="avartar"
-                />
-                <div
-                  className="overlay"
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <FontAwesomeIcon icon={faCamera} />
+
+        <main className="flex-1 p-8">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+              Profile Settings
+            </h1>
+
+            {/* Profile Header */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
+              <div className="flex items-center space-x-8">
+                <div className="relative">
+                  <img
+                    src={avatar}
+                    alt="Profile"
+                    className="w-32 h-32 rounded-full object-cover"
+                  />
+                  <button
+                    onClick={triggerFileInput}
+                    className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                  >
+                    <FontAwesomeIcon icon={faCamera} />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    id="avatar-upload"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
                 </div>
-              </label>
-              <input
-                type="file"
-                id="avatar-upload"
-                style={{ display: "none" }}
-                onChange={handleFileUpload}
-              />
-            </div>
-            <div className="vertical-line bg-black dark:bg-white"></div>
-            <div style={{ flex: 4 }}>
-              <p className="font-medium underline mt-4 text-black dark:text-white">Mr. {email}</p>
-              <p className=" text-black dark:text-white">
-                {" "}
-                {address} 
-              </p>
 
-              
-            </div>
-            <div className="flex-5 flex justify-center items-center"></div>
-          </div>
-
-          {/* line 1 */}
-          <div className="flex items-center">
-            <div className="horizontal-line bg-black dark:bg-white"></div>
-          </div>
-
-          <form className="flex flex-col text-black dark:text-white"  onSubmit={handleSubmitUserData}>
-            <div className="form-group">
-              <label for="user" className="article">
-                Full Name
-              </label>
-              <input
-                type="user"
-                id="last"
-                className="input-article bg-white dark:bg-gray-600 text-black dark:text-white dark:border-none"
-                style={{ width: "90%" }}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div className="flex mt-3">
-              <div className="form-group text-black dark:text-white">
-                <label for="email" className="article">
-                  Email Address
-                </label>
-                <input
-                  readOnly
-                  type="text"
-                  id="email"
-                  className="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  title="This field is read-only"
-                />
-              </div>
-              <div class="form-group">
-                <label for="phone" className="article">
-                  Phone Numer
-                </label>
-                <input
-                  type="text"
-                  id="phone"
-                  className="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {name}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300">{email}</p>
+                </div>
               </div>
             </div>
-            <div className="form-group mt-3">
-              <label htmlFor="last1" className="article">
-                Home Address
-              </label>
-              <input
-                type="text"
-                name="last1"
-                className="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none"
-                style={{ width: "90%" }}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </div>
-            <div style={{ width: "90%" }}>
-              {/* <button type="submit" className="button button--light">
-                Save Change
-              </button> */}
-                <button type="submit" class="button py-4 bg-black hover:bg-gray-600 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-                Save Change
+
+            {/* Personal Information Form */}
+            <form onSubmit={handleSubmitUserData} className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+                  Personal Information
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      readOnly
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                  disabled={loading}
+                >
+                  {loading && (
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      ></path>
+                    </svg>
+                  )}
+                  Save Changes
                 </button>
-            </div>
-          </form>
+              </div>
+            </form>
 
-          {/* <div className="flex">
-                        <div class="form-group">
-                            <label for="first" class="article">First Name</label>
-                            <input type="text" id="first" class="input-article" value="Luffy" />
-                        </div>
-                        <div class="form-group">
-                            <label for="last" class="article">Last Name</label>
-                            <input type="text" id="last" class="input-article" value="Monkey D" />
-                        </div>
-                   </div> */}
+            {/* Password Change Form */}
+            <form onSubmit={handleChangePassword} className="space-y-6 mt-8">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+                  Change Password
+                </h3>
 
-          {/* line 2 */}
-          {/* <div className="flex items-center">
-                        <div className="horizontal-line"></div>
-                    </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Current Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password || ""}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
 
-                    <label for="last" class="article">Gender</label>
-                    <div className="flex mt-4">
-                        <input className="input-radio" type="radio" name="gt"/>
-                        <div className="flex justify-center items-center">
-                            <p className="radio-text-car-sort">Male</p>
-                        </div>
-                    </div>
-                    <div className="flex mt-4">
-                        <input className="input-radio" type="radio"  name="gt"/>
-                        <div className="flex justify-center items-center">
-                            <p className="radio-text-car-sort">Female</p>
-                        </div>
-                    </div> */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword || ""}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
 
-          {/* line 3 */}
-          <div className="flex items-center">
-            <div className="horizontal-line"></div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmNewPassword || ""}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-700 bg-gray-100 p-2"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                  disabled={loading}
+                >
+                  {loading && (
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      ></path>
+                    </svg>
+                  )}
+                  Update Password
+                </button>
+              </div>
+            </form>
           </div>
-
-          <form className="flex flex-col" onSubmit={handleChangePassword}>
-            <div className="flex ">
-              <div class="form-group text-black dark:text-white">
-                <label for="cr" class="article">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  id="cr"
-                  class="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div class="form-group text-black dark:text-white">
-                <label for="ne" class="article">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="ne"
-                  class="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none"
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-            </div>
-            <div class="form-group text-black dark:text-white" style={{ marginTop: 15 }}>
-              <label for="user" class="article">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="user"
-                class="input-article text-black dark:text-white bg-white dark:bg-gray-600 dark:border-none"
-                style={{ width: "90%" }}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-              />
-            </div>
-
-            <div style={{ width: "90%" }}>
-              {/* <button className="button button--light mb-10">Cancel</button> */}
-              <button type="submit" class=" button py-4 bg-black hover:bg-gray-600 dark:bg-blue-500  dark:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-                    Save Change
-              </button>
-            </div>
-          </form>
-        </div>
+        </main>
       </div>
+
       {!!snackbar && (
-              <Snackbar open onClose={handleCloseSnackbar} autoHideDuration={6000} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-                <Alert {...snackbar} onClose={handleCloseSnackbar} />
-              </Snackbar>
-            )}
-    </>
+        <Snackbar
+          open
+          onClose={handleCloseSnackbar}
+          autoHideDuration={6000}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert {...snackbar} onClose={handleCloseSnackbar} />
+        </Snackbar>
+      )}
+    </div>
   );
 }
 
-export default CustomerProfile;
+export default ManagerProfile;

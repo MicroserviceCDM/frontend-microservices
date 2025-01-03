@@ -1,113 +1,189 @@
 import React, { useState, useEffect } from "react";
-import SideBarStaff from "../../../layouts/components/SideBarStaff";
+import ManagerSideBar from "../../../layouts/components/ManagerSideBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { cdmApi } from "../../../misc/cdmApi";
 import OtherLoading from "../../../components/OtherLoading";
-import ManagerSideBar from "../../../layouts/components/ManagerSideBar";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Divider
+} from "@mui/material";
+
 const StaffReport = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [report, setReport] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const defaultImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ85OS-FZ দেখলেন-h475y4fVn8Ag&usqp=CAU"; // Replace with your default image URL
 
   const getReport = async () => {
-    await cdmApi
-      .getCustomerReport()
-      .then((response) => {
-        console.log("Report");
-        console.log(response.data);
-        setReport(response.data.content);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    try {
+      const response = await cdmApi.getCustomerReport();
+      setReports(response.data.content);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    }
   };
 
   useEffect(() => {
-    getReport();
+    const fetchData = async () => {
+      setLoading(true);
+      await getReport();
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
-  const records = report.slice(firstIndex, lastIndex);
-  const npage = Math.ceil(report.length / recordsPerPage);
+  const records = reports.slice(firstIndex, lastIndex);
+  const npage = Math.ceil(reports.length / recordsPerPage);
   const numbers = (() => {
-    if (currentPage > 1 && currentPage < npage) {
-      return [currentPage - 1, currentPage, currentPage + 1];
-    } else if (currentPage <= 1) {
-      return [1, 2, 3];
-    } else {
-      return [npage - 2, npage - 1, npage];
+    let nums = [];
+    if (npage <= 1) {
+      return [1];
     }
+    if (currentPage > 2 && currentPage < npage - 1) {
+      nums = [
+        currentPage - 2,
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        currentPage + 2,
+      ];
+    } else if (currentPage <= 2) {
+      for (let i = 0; i < npage; i++) {
+        if (i < 5) {
+          nums.push(i + 1);
+        }
+      }
+    } else {
+      for (let i = npage - 5; i < npage; i++) {
+        if (i >= 0) {
+          nums.push(i + 1);
+        }
+      }
+    }
+    return nums;
   })();
+
   function changeCPage(id) {
     setCurrentPage(id);
   }
-  const renderStatus = (status) => {
-    const statusClasses = {
-      complete: "green",
-      pending: "red",
-      processing: "orange",
-    };
-    return (
-      <span className={`status ${statusClasses[status]}`}>• {status}</span>
-    );
-  };
 
   const DetailModal = ({ report, onClose }) => {
     if (!report) return null;
+  
     return (
-      <div className={`modal ${report ? "active" : ""}`}>
-        <div className="modal-content">
-          <div className="title-bar">
-            <div className="heading-report">Detail</div>
-            <button class="close-button" onClick={onClose}>
-              <FontAwesomeIcon icon={faCircleXmark} className="closes-icon" />
-            </button>
+      <Dialog
+        open={!!report}
+        onClose={onClose}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          className: "dark:bg-gray-800"
+        }}
+      >
+        <DialogTitle>
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              Report Detail
+            </span>
+            <IconButton onClick={onClose}>
+              <FontAwesomeIcon
+                icon={faCircleXmark}
+                className="text-gray-700 dark:text-gray-300 hover:text-red-500" // Add hover effect
+              />
+            </IconButton>
           </div>
-          <div className="detail-box">
-            <p className="flex mt-6 ml-10">
-              <strong className="mr-12">{report.customer}</strong>{" "}
-              <div className="mr-12">{report.createdDate.split("T")[0]}</div>{" "}
-              {report.status.toUpperCase()}
-            </p>
+        </DialogTitle>
+        <Divider className="dark:bg-gray-700" /> {/* Add a divider */}
+        <DialogContent className="pt-4">
+          {/* User and Date Information */}
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="flex-shrink-0 w-10 h-10 bg-gray-400 dark:bg-gray-700 rounded-full flex items-center justify-center text-white">
+              {/* You can replace this with an avatar if available */}
+              {report.userId.substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <div className="font-medium text-gray-900 dark:text-white">
+                {report.userId}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {report.createdDate.split("T")[0]}
+              </div>
+            </div>
+            <div className="ml-auto">
+              <span className="px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                  {report.status.toUpperCase()}
+              </span>
+            </div>
+          </div>
+  
+          {/* Description Textarea */}
+          <div className="mt-2">
             <textarea
-              rows={12}
-              className="area-detail bg-gray-100 mt-6 ml-10"
+              rows={6} // Reduced row count
+              className="w-full px-3 py-2 text-gray-700 dark:text-gray-300 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"
               readOnly
               value={report.description}
-            ></textarea>
+            />
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   };
+
 
   const ImageModal = ({ src, onClose }) => {
-    if (!src) return null;
+    const [imageLoading, setImageLoading] = useState(true);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+            setImageLoading(false); // Image loaded, set loading to false
+        };
+        img.onerror = () => {
+            setImageLoading(false); // Image failed to load
+            console.error("Error loading image:", src);
+        };
+    }, [src]);
 
     return (
-      <div className={`modal ${selectedImage ? "active" : ""}`}>
-        <div className="modal-content">
-          <div className="title-bar">
-            <div className="heading-report">Image</div>
-            <button class="close-button" onClick={onClose}>
-              <FontAwesomeIcon icon={faCircleXmark} className="closes-icon" />
-            </button>
-          </div>
-          <img
-            src={src}
-            className="img-box"
-            alt="Expanded"
-            style={{ width: "400px" }}
-          />
-        </div>
-      </div>
+        <Dialog open={!!src} onClose={onClose} fullWidth maxWidth="md dark:bg-gray-800"
+            PaperProps={{
+            }}>
+            <DialogTitle>
+                <div className="flex justify-between items-center">
+                    <span className="text-gray-900 dark:text-white">Image</span>
+                    <IconButton onClick={onClose}>
+                        <FontAwesomeIcon icon={faCircleXmark} className="text-gray-700 dark:text-gray-300" />
+                    </IconButton>
+                </div>
+            </DialogTitle>
+            <DialogContent>
+                {imageLoading ? (
+                    <div className="flex justify-center items-center p-16">
+                        <OtherLoading />
+                    </div>
+                ) : (
+                    <img
+                        src={src || defaultImageUrl}
+                        className="w-full"
+                        alt="Expanded"
+                        onError={(e) => { e.target.onerror = null; e.target.src = defaultImageUrl }} // Handle error by setting default image
+                    />
+                )}
+            </DialogContent>
+        </Dialog>
     );
-  };
+};
 
   const handleCloseModal = () => {
     setSelectedReport(null);
@@ -121,101 +197,75 @@ const StaffReport = () => {
     setSelectedImage(imageSrc);
   };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-    return () => clearTimeout(timeoutId);
-  }, [loading]);
-
   return (
     <div>
       {!loading ? (
-        <span className="flex dark:bg-slate-800 h-screen">
-          <ManagerSideBar className="flex-1" />
-          <div className="flex flex-col">
-            <h1 className="font-medium text-3xl mt-16 ml-10 dark:text-white">
+        <div className="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
+          <ManagerSideBar />
+          <div className="flex-1 p-10">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
               Report
             </h1>
-            <table className="mt-12 ml-10 dark:text-white">
+            <table className="w-full table-auto text-gray-900 dark:text-white">
               <thead>
-                <tr>
-                  <th className="dark:bg-gray-500">No.</th>
-                  <th className="dark:bg-gray-500">User ID</th>
-                  <th className="dark:bg-gray-500">Image</th>
-                  <th className="dark:bg-gray-500">Title</th>
-                  <th className="dark:bg-gray-500">Status</th>
-                  <th className="dark:bg-gray-500">Type</th>
-                  <th className="dark:bg-gray-500">Detail</th>
+                <tr className="text-sm bg-gray-200 dark:bg-gray-800">
+                  <th className="py-4 px-6 dark:bg-gray-600">No.</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">User ID</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">Image</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">Title</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">Status</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">Type</th>
+                  <th className="py-4 px-6 dark:bg-gray-600">Detail</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((report, index) => (
-                  <tr key={report.id}>
-                    <td className="id-col">
+                  <tr
+                    key={report.id}
+                    className="text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <td className="py-4 px-6">
                       {(currentPage - 1) * recordsPerPage + index + 1}
                     </td>
-                    <td className="customer-col">{report.userId}</td>
-                    <td className="img-col">
-                      <img
-                        onClick={() => handleImageClick(report.image)}
-                        className="image-col"
-                        src={report.image}
-                        alt=""
-                      />
-                    </td>
-                    <td className="problem-col">{report.title}</td>
-                    {/* <td className="img-col">
-                    {" "}
+                    <td className="py-4 px-6">{report.userId}</td>
+                    <td className="py-4 px-6">
                     <img
-                      src={report.img}
-                      className="img-mini"
-                      onClick={() => handleImageClick(report.img)}
-                      alt="preview"
-                      width="60"
-                      height="60"
-                    />{" "}
-                  </td> */}
-                    {/* <td className="date-col">{report.date}</td> */}
-                    <td className="status-col">{report.status}</td>
-                    <td className="type-col">{report.type}</td>
-                    <td className="view-col">
-                      {/* <button
-                      className="view-btn"
-                      onClick={() => handleViewClick(report)}
-                    >
-                      View
-                    </button> */}
+                        onClick={() => handleImageClick(report.image)}
+                        className="h-12 w-12 object-cover cursor-pointer"
+                        src={report.image || defaultImageUrl}
+                        alt="Report"
+                        onError={(e) => { e.target.onerror = null; e.target.src = defaultImageUrl }} // Handle error by setting default image
+                    />
+                    </td>
+                    <td className="py-4 px-6">{report.title}</td>
+                    <td className="py-4 px-6">{report.status}</td>
+                    <td className="py-4 px-6">{report.type}</td>
+                    <td className="py-4 px-6">
                       <button
                         onClick={() => handleViewClick(report)}
                         type="button"
-                        class="text-white bg-green-500 dark:bg-blue-500 hover:bg-green-700 dark:hover:bg-blue-700 focus:ring-4 dark:focus:ring-blue-300 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 focus:outline-none"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
                       >
                         View
                       </button>
-
-                      {/* <button onClick={() => handleViewClick(report)}
-                        type="button"
-                        data-te-ripple-init
-                        data-te-ripple-color="light"
-                        class="inline-block rounded bg-primary px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]">
-                        View
-                    </button> */}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <nav className="ml-auto mt-8">
-              <ul className="flex items-center -space-x-px h-10 text-base">
-                <li style={{ margin: 0 }}>
-                  <a
-                    href="#"
-                    className="dark:bg-gray-500 dark:text-white flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 "
+
+            {/* Pagination */}
+            <nav className="mt-8 flex justify-end">
+              <ul className="flex items-center space-x-2">
+                <li>
+                  <button
+                    onClick={() => changeCPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <span className="sr-only">Previous</span>
                     <svg
-                      className="w-3 h-3 rtl:rotate-180"
+                      className="w-3 h-3"
                       aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -223,51 +273,37 @@ const StaffReport = () => {
                     >
                       <path
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M5 1 1 5l4 4"
                       />
                     </svg>
-                  </a>
-                </li>
-                <li
-                  className={`${
-                    currentPage > 2 ? "block" : "hidden"
-                  } dark:bg-gray-500 dark:text-white flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700`}
-                >
-                  ...
+                  </button>
                 </li>
                 {numbers.map((n, i) => (
-                  <li
-                    className={`dark:bg-gray-500 dark:text-white flex items-center justify-center px-4 h-10 leading-tight text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700  ${
-                      currentPage === n
-                        ? "bg-gray-300 dark:bg-gray-800"
-                        : "bg-white dark:bg-gray-500"
-                    }`}
-                    key={i}
-                  >
-                    <a href="#" onClick={() => changeCPage(n)}>
+                  <li key={i}>
+                    <button
+                      onClick={() => changeCPage(n)}
+                      className={`px-3 py-2 ${
+                        currentPage === n
+                          ? "bg-blue-600 text-white"
+                          : "bg-white dark:bg-gray-800 text-gray-700 dark:text-white"
+                      } border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg`}
+                    >
                       {n}
-                    </a>
+                    </button>
                   </li>
                 ))}
-                <li
-                  className={`${
-                    currentPage < npage - 1 ? "block" : "hidden"
-                  } dark:bg-gray-500 dark:text-white flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700`}
-                >
-                  ...
-                </li>
-
                 <li>
-                  <a
-                    href="#"
-                    className=" dark:bg-gray-500 dark:text-white flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 "
+                  <button
+                    onClick={() => changeCPage(currentPage + 1)}
+                    disabled={currentPage === npage}
+                    className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <span className="sr-only">Next</span>
                     <svg
-                      className="w-3 h-3 rtl:rotate-180"
+                      className="w-3 h-3"
                       aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -275,19 +311,22 @@ const StaffReport = () => {
                     >
                       <path
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="m1 9 4-4-4-4"
                       />
                     </svg>
-                  </a>
+                  </button>
                 </li>
               </ul>
             </nav>
 
             {selectedReport && (
-              <DetailModal report={selectedReport} onClose={handleCloseModal} />
+              <DetailModal
+                report={selectedReport}
+                onClose={handleCloseModal}
+              />
             )}
             {selectedImage && (
               <ImageModal
@@ -296,11 +335,9 @@ const StaffReport = () => {
               />
             )}
           </div>
-        </span>
+        </div>
       ) : (
-        <p>
-          <OtherLoading />
-        </p>
+        <OtherLoading />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import ManagerSideBar from "../../../layouts/components/ManagerSideBar";
-import "./ManagerHome.css";
+// import "./ManagerHome.css";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import CardWithPieChart from "../../../components/ActiveShapePieChart/PieChartCard";
 import CardWithAreaChart from "../../../components/SimpleAreaChart/AreaChartCard";
