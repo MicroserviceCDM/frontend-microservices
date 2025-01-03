@@ -22,7 +22,10 @@ Car Connect is a website that sells cars. Website is written on react.js.
 
 # Project Demo
    - Browser: https://cdm.tuilakhanh.id.vn
-   
+
+# Requirement
+   - NodeJS 23
+  
 # Installation and Setup
 
 ```bash
