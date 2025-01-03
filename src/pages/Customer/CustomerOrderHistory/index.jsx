@@ -2,7 +2,7 @@ import SideBar from "../../../layouts/components/sideBar/SideBar";
 import { cdmApi } from "../../../misc/cdmApi";
 import { useEffect, useState } from "react";
 import OderdetailModal from "./component/OderdetailModal";
-import "./OrderHis.css";
+// import "./OrderHis.css";
 
 function CustomerOrderHistory() {
   const [userData, setUserData] = useState(

@@ -1,10 +1,5 @@
 import "./cartStyle.css";
-import SideBar from "../../../layouts/components/sideBar/SideBar";
-import CartList from "./components/CartList";
-import FooterCart from "./components/FooterCart";
-import CartData from "./cart";
 import React, { useState, useEffect } from "react";
-import CartItem from "./components/CartItem";
 import { cdmApi } from "../../../misc/cdmApi";
 import { Snackbar } from "@mui/material";
 import Alert from "@mui/material/Alert";
