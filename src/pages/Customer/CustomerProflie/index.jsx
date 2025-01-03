@@ -114,16 +114,54 @@ function CustomerProfile() {
     getUserMe();
   }, []);
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result);
-      };
-      reader.readAsDataURL(file);
+      setLoading(true); 
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "cdmpreset"); // Replace with your Cloudinary upload preset
+
+      try {
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/droondbdu/image/upload`, // Replace with your Cloudinary cloud name
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        const imgData = await response.json();
+        const newAvatarUrl = imgData.secure_url;
+
+        setAvatar(newAvatarUrl); // Update the avatar state with the new URL
+
+        // Automatically update user data after successful upload
+        const updatedUser = { id, avatar: newAvatarUrl, name, email, phone, address };
+        await cdmApi.updateUser(updatedUser);
+
+        // Update local storage after successful API call
+        const updatedUserData = { ...userData, avatar: newAvatarUrl };
+        localStorage.setItem("currentUser", JSON.stringify(updatedUserData));
+        setUserData(updatedUserData);
+
+        setSnackbar({
+          children: "Avatar updated successfully!",
+          severity: "success",
+        });
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        setSnackbar({
+          children: "Error uploading avatar.",
+          severity: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
     } else {
-      setSnackbar({ children: "Please select an image file.", severity: "warning" });
+      setSnackbar({
+        children: "Please select an image file.",
+        severity: "warning",
+      });
     }
   };
 
@@ -234,12 +272,12 @@ function CustomerProfile() {
 
                 <button
                   type="submit"
-                  className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                  className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"
                   disabled={loading}
                 >
                   {loading && (
                     <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      className="animate-spin h-5 w-5 text-white mr-3"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
