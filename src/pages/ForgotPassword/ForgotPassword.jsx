@@ -1,9 +1,5 @@
 import React, { useState } from "react"
-import '../Login/login-register.css'
-import { Link } from "react-router-dom"
 import { cdmApi } from "../../misc/cdmApi"
-import { useNavigate } from 'react-router-dom';
-import axios from "axios";
 
 
 function ForgotPassword() {
@@ -66,7 +62,7 @@ function ForgotPassword() {
 
     return (
         <>
-            <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-4 lg:px-8">
+            <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-4 lg:px-8 bg-white">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <img
                 className="mx-auto h-32 w-auto"
