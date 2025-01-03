@@ -151,15 +151,30 @@ const StaffManageShopPage = () => {
   }
 
   const handleDeleteApi = async () => {
+    // try {
+    //   await cdmApi.deleteCar(deletingId);
+    //   setRows(rows.filter((row) => row.id !== deletingId));
+    //   setDataChangeFlag(!dataChangeFlag);
+    //   setSnackbar({ children: "Deleted successfully", severity: "success" });
+    //   setDeletingId(null);
+    // } catch (error) {
+    //   console.error("Error deleting product:", error);
+    // }
+
     try {
-      await cdmApi.deleteCar(deletingId);
-      setRows(rows.filter((row) => row.id !== deletingId));
-      setDataChangeFlag(!dataChangeFlag);
-      setSnackbar({ children: "Deleted successfully", severity: "success" });
-      setDeletingId(null);
-    } catch (error) {
-      console.error("Error deleting product:", error);
-    }
+              await cdmApi.deleteShop(deletingId);
+              setRows(rows.filter((row) => row.id !== deletingId));
+              setSnackbar({
+                children: 'Deleted successfully',
+                severity: 'success',
+              });
+            } catch (error) {
+              console.error('Error deleting:', error);
+              setSnackbar({ children: "Couldn't delete", severity: 'error' });
+            } finally {
+              setDataChangeFlag(!dataChangeFlag);
+              setDeletingId(null);
+            }
   }
 
 
