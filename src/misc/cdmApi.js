@@ -39,6 +39,7 @@ export const cdmApi = {
   createVoucher,
   checkVoucher,
   deleteVoucher,
+  deleteShop,
 }
 
 function authenticate(user) {
@@ -125,6 +126,7 @@ function deleteUser(id) {
     },
   });
 }
+
 function checkVoucher(code) {
   return instance.post(`/api/vouchers/check_voucher?voucherCode=${code}`, {
     // params: {
@@ -291,6 +293,17 @@ function updateOrder(order) {
 function deleteCar(id) {
   return instance.delete(
     `/api/v1/products/deleteCar/${id}`,
+    {
+      headers: {
+        Authorization: bearerAuth(localStorage.getItem("accessToken")),
+      },
+    }
+  );
+}
+
+function deleteShop(id) {
+  return instance.delete(
+    `/api/v1/products/deleteShop/${id}`,
     {
       headers: {
         Authorization: bearerAuth(localStorage.getItem("accessToken")),
