@@ -9,9 +9,9 @@ import {
   SunIcon,
   MoonIcon,
 } from "@heroicons/react/24/outline";
-import ShoppingGuide from "../../../pages/NavBar/ShoppingGuide";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import ShoppingGuide from "../../../pages/NavBar/ShoppingGuide";import React from "react";
+
 const navigation = [
   { name: "Vehicle", href: "/vehicle", current: false },
   { name: "Coupon", href: "/customerhome/coupon", current: false },
@@ -19,12 +19,9 @@ const navigation = [
   { name: "Shop", href: "/shop", current: false },
 ];
 
+// Mobile navigation (for smaller screens)
 const mobile_navigation = [
-  { name: "Vehicle", href: "/vehicle", current: false },
-  { name: "Coupon", href: "/customerhome/coupon", current: false },
-  { name: "Shopping Guide", href: "#", current: false },
-  { name: "Shop", href: "/shop", current: false },
-
+  ...navigation, // Add all navigation items first
   { name: "Dashboard", href: "/customerhome", current: false },
   { name: "Profile Setting", href: "/customerhome/profile", current: false },
   { name: "Payment Method", href: "/customerhome/payment", current: false },
@@ -49,7 +46,7 @@ export default function Example() {
     } else {
       if (userData.role === "CUSTOMER") {
         navigate("/customerhome");
-      } else if (userData === "STAFF") {
+      } else if (userData.role === "STAFF") {
         navigate("/staffhome");
       } else {
         navigate("/managerhome");
@@ -59,53 +56,87 @@ export default function Example() {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Handle click for navigation items, specifically for "Shopping Guide"
   const handleClick = (name) => {
     if (name === "Shopping Guide") {
       setModalOpen(true);
     }
   };
 
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+
 
   useEffect(() => {
-    let tmp = localStorage.getItem("theme");
-    if (tmp) {
-      if (tmp === "dark") {
+    // Apply the theme to the document element
+    if (theme === "dark") {
         document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
     } else {
-      localStorage.setItem("theme", theme);
+        document.documentElement.classList.remove("dark");
     }
+    // Save the current theme to localStorage
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const handleThemeSwitch = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-    console.log(theme);
-    localStorage.setItem("theme", theme);
+      // Toggle the theme
+      const newTheme = theme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
   };
 
   return (
-    <Disclosure as="nav" className="bg-slate-800 dark:bg-gray-600">
+    <Disclosure as="nav" className="bg-slate-800 dark:bg-gray-900">
       {({ open }) => (
         <>
-          {modalOpen && <ShoppingGuide setOpenModal={setModalOpen} />}
-          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 bg-slate-800 dark:bg-gray-600">
+          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
-              <div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
-                {/* Mobile menu button*/}
-                <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                  <span className="absolute -inset-0.5" />
-                  <span className="sr-only">Open main menu</span>
-                  {open ? (
-                    <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
+              <div className="px-2 flex items-center lg:px-0">
+                {/* Remove lg:hidden to show on all screen size*/}
+                <div className="absolute inset-y-0 left-0 flex items-center ">
+                  {/* Mobile menu button*/}
+                  <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                    <span className="absolute -inset-0.5" />
+                    <span className="sr-only">Open main menu</span>
+                    {open ? (
+                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                    ) : (
+                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                    )}
+                  </Disclosure.Button>
+                </div>
+                <div className="flex-shrink-0">
+                  <a href="/">
+                    <img
+                      className="h-24 w-auto ml-4"
+                      src="https://res.cloudinary.com/droondbdu/image/upload/v1702194603/wepik-gradient-modern-car-detail-clean-amp-repair-logo-20231210074938LRYR_dyz3ez.png"
+                      alt="Your Company"
+                    />
+                  </a>
+                </div>
+                <div className="hidden lg:ml-6 lg:block">
+                  <div className="lg:ml-64 flex space-x-4">
+                    {navigation.map((item) => (
+                      <a
+                        onClick={() => handleClick(item.name)}
+                        key={item.name}
+                        href={item.href}
+                        className={classNames(
+                          item.current
+                            ? "bg-gray-900 text-white"
+                            : "text-white hover:bg-gray-700 hover:text-white",
+                          "rounded-md px-3 py-2 text-sm font-medium text-white"
+                        )}
+                        aria-current={item.current ? "page" : undefined}
+                      >
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
+
+              <div className="flex-1 flex items-center justify-center lg:hidden">
                 <div className="flex flex-shrink-0 items-center">
                   <a href="/">
                     <img
@@ -125,8 +156,8 @@ export default function Example() {
                         className={classNames(
                           item.current
                             ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "rounded-md px-3 py-2 text-sm font-medium"
+                            : "text-white hover:bg-gray-700 hover:text-white",
+                          "rounded-md px-3 py-2 text-sm font-medium text-white"
                         )}
                         aria-current={item.current ? "page" : undefined}
                       >
@@ -136,19 +167,13 @@ export default function Example() {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                {/* <button
-                    type="button" onClick={() => setThemeLight()}
-                    className="bg-transparent relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                  >
-                    <span className="absolute -inset-1.5" />
-                    <span className="sr-only">View notifications</span>
-                    <SunIcon className="h-6 w-6" aria-hidden="true" />
-                  </button> */}
+
+              {/* Right-side Icons */}
+              <div className="flex items-center lg:static lg:inset-auto lg:ml-6 lg:pr-0">
                 <button
                   type="button"
                   onClick={handleThemeSwitch}
-                  className="ml-4 bg-transparent relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  className="ml-4 bg-transparent relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">View notifications</span>
@@ -169,11 +194,14 @@ export default function Example() {
                 <a href="/customerhome/shoppingcart">
                   <button
                     type="button"
-                    className="bg-transparent relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    className="bg-transparent relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                   >
                     <span className="absolute -inset-1.5" />
                     <span className="sr-only">View notifications</span>
-                    <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
+                    <ShoppingCartIcon
+                      className="h-6 w-6 text-white"
+                      aria-hidden="true"
+                    />
                   </button>
                 </a>
 
@@ -181,16 +209,20 @@ export default function Example() {
                 <button
                   onClick={handleUserButton}
                   type="button"
-                  className="bg-transparent ml-4 relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  className="bg-transparent ml-4 relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">View notifications</span>
-                  <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
+                  <UserCircleIcon
+                    className="h-6 w-6 text-white"
+                    aria-hidden="true"
+                  />
                 </button>
               </div>
             </div>
           </div>
 
+          {/* Mobile Menu (block lg:hidden) */}
           <Disclosure.Panel className="block lg:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
               {mobile_navigation.map((item) => (
@@ -211,6 +243,9 @@ export default function Example() {
               ))}
             </div>
           </Disclosure.Panel>
+
+          {/* Render the Modal component */}
+          <ShoppingGuide open={modalOpen} setOpenModal={setModalOpen} />
         </>
       )}
     </Disclosure>

@@ -1,136 +1,123 @@
 import React from "react";
-import "./modal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown, faClose } from "@fortawesome/free-solid-svg-icons";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, Checkbox, FormControlLabel, Button, FormControl, InputLabel } from "@mui/material";
 
-function Modal({ setOpenModal, data }) {
+function Modal({ open, setOpenModal, data }) {
   return (
-    <div className="modalBackground">
-      <div className="modalContainer">
-        <span className="titleCloseBtn">
-          <button
-            onClick={() => {
-              setOpenModal(false);
-            }}
-          >
-            <FontAwesomeIcon className="text-black" icon={faClose} />
+    <Dialog open={open} onClose={() => setOpenModal(false)} fullWidth maxWidth="md">
+      <DialogTitle>
+        <div className="flex justify-between items-center">
+          <span>Add Card</span>
+          <button onClick={() => setOpenModal(false)}>
+            <FontAwesomeIcon icon={faClose} className="text-gray-700" />
           </button>
-        </span>
-        <div className="flex">
-          <div className="card-info mt-4">
-            <div className="flex mt-4">
-              <label htmlFor="cardnum" className="modal-label">
-                Card Number
-              </label>
-              <input type="text" className="modal-input ml-6" />
-            </div>
-            <div className="flex mt-4">
-              <label htmlFor="cardnum" className="modal-label">
-                Name On Card
-              </label>
-              <input type="text" className="modal-input  ml-6" />
-            </div>
-            <div className="flex mt-4">
-              <label htmlFor="cardnum" className="modal-label">
+        </div>
+      </DialogTitle>
+
+      <DialogContent>
+        <div className="flex space-x-8">
+          <div className="flex-2">
+            <TextField
+              label="Card Number"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Name On Card"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+            />
+            <FormControl fullWidth margin="normal" variant="outlined">
+              <InputLabel shrink htmlFor="expiration-month">
                 Expiration Date
-              </label>
-              <div style={{ flex: 3 }} className="flex">
-                <select
-                  name="month"
-                  id=""
-                  className="modal-input mr-8"
-                  style={{ marginLeft: 12 }}
+              </InputLabel>
+              <div className="flex items-center">
+                <Select
+                  labelId="expiration-month-label"
+                  id="expiration-month"
+                  label="Expiration Date"
+                  className="w-1/2 pr-2"
+                  MenuProps={{ style: { maxHeight: 250 } }}
                 >
-                  <option value="1">01</option>
-                  <option value="1">02</option>
-                  <option value="1">03</option>
-                  <option value="1">04</option>
-                  <option value="1">05</option>
-                  <option value="1">06</option>
-                  <option value="1">07</option>
-                  <option value="1">08</option>
-                  <option value="1">09</option>
-                  <option value="1">10</option>
-                  <option value="1">11</option>
-                  <option value="1">12</option>
-                </select>
-                <select name="year" id="" className="modal-input mr-48">
-                  <option value="1">23</option>
-                  <option value="1">24</option>
-                  <option value="1">25</option>
-                  <option value="1">26</option>
-                  <option value="1">27</option>
-                  <option value="1">28</option>
-                  <option value="1">29</option>
-                  <option value="1">30</option>
-                  <option value="1">31</option>
-                  <option value="1">32</option>
-                  <option value="1">33</option>
-                  <option value="1">34</option>
-                  <option value="1">35</option>
-                  <option value="1">36</option>
-                  <option value="1">37</option>
-                  <option value="1">38</option>
-                  <option value="1">39</option>
-                  <option value="1">40</option>
-                </select>
+                  {[...Array(12)].map((_, index) => (
+                    <MenuItem key={index} value={index + 1}>
+                      {(index + 1).toString().padStart(2, "0")}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Select
+                  labelId="expiration-year-label"
+                  id="expiration-year"
+                  label="Expiration Year"
+                  className="w-1/2 pl-2"
+                  MenuProps={{ style: { maxHeight: 250 } }}
+                >
+                  {[...Array(18)].map((_, index) => (
+                    <MenuItem key={index} value={23 + index}>
+                      {(23 + index).toString()}
+                    </MenuItem>
+                  ))}
+                </Select>
               </div>
-            </div>
-            <div className="flex mt-4">
-              <label htmlFor="cardnum" className="modal-label">
-                CVV
-              </label>
-              <input type="text" className="modal-input  ml-6" />
-            </div>
-            <div className="flex items-center mt-4">
-              <div style={{ flex: 1 }}></div>
-              <div style={{ flex: 3 }} className="items-center">
-                <input
-                  type="checkbox"
-                  className="modal-input w-4 h-4"
-                  style={{ marginLeft: 12 }}
-                  value={true}
-                ></input>
-                <span className="ml-2">Set as default payment method</span>
-              </div>
-            </div>
-
-            <div className="flex mt-6 ml-4">
-              <div style={{ flex: 1 }}></div>
-              <div style={{ flex: 3 }}>
-                <button className="p-3 font-semibold text-white bg-black w-64 rounded-xl hover:bg-transparent hover:border-2 hover:border-black hover:text-black active:bg-gray-300">
-                  Add This Card
-                </button>
-              </div>
-            </div>
+            </FormControl>
+            <TextField
+              label="CVV"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+            />
+            <FormControlLabel
+              control={<Checkbox defaultChecked />}
+              label="Set as default payment method"
+            />
           </div>
-          <div
-            style={{ width: 1, height: "100%", backgroundColor: "black" }}
-            className="ml-8"
-          ></div>
 
-          <div className="other-info">
-            <p className="mt-6 ml-8">
-              CDM system only accept for major credit Visa and Master Card
+          <div className="w-px bg-gray-400 mx-4"></div>
+
+          <div className="flex-1">
+            <p className="mt-6">
+              CDM system only accepts major credit Visa and Master Card
             </p>
-            <div className="flex">
+            <div className="flex mt-4 space-x-4">
               <img
                 src="https://res.cloudinary.com/droondbdu/image/upload/v1701763296/5982778_Screen_Shot_2022-05-11_at_09_fo5sll.webp"
-                alt="des"
-                style={{ width: 133, height: 58 }}
-                className="ml-6 mt-6"
+                alt="Visa"
+                className="h-16 w-auto"
               />
               <img
                 src="https://res.cloudinary.com/droondbdu/image/upload/v1701763523/download_4_ew6v6d.png"
-                alt="des"
-                style={{ width: 128, height: 58 }}
-                className="ml-2 mt-6"
+                alt="MasterCard"
+                className="h-16 w-auto"
               />
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          onClick={() => setOpenModal(false)}
+          variant="outlined"
+          color="error"
+          className="px-8"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Add Card
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
 import EarbudsBatteryOutlinedIcon from "@mui/icons-material/EarbudsBatteryOutlined";
+import { useTheme } from '../../../ThemeContext';
 
 const navigation = [
   // { name: 'Vehicle', href: '/vehicle', current: false },
@@ -66,26 +67,7 @@ export default function Example() {
     }
   };
 
-  const [theme, setTheme] = useState("light");
-
-  useEffect(() => {
-    let tmp = localStorage.getItem("theme");
-    if (tmp) {
-      if (tmp === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    } else {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  const handleThemeSwitch = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-    console.log(theme);
-    localStorage.setItem("theme", theme);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <Disclosure as="nav" className="bg-slate-800 dark:bg-gray-600">
@@ -160,7 +142,7 @@ export default function Example() {
                 </a> */}
                 <button
                   type="button"
-                  onClick={handleThemeSwitch}
+                  onClick={toggleTheme}
                   className="ml-4 bg-transparent relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span className="absolute -inset-1.5" />

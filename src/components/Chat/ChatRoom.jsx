@@ -1,11 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
 import { cdmApi } from "../../misc/cdmApi";
 import { config } from "../../misc/Constants";
-
-import "./ChatRoom.css";
 import axios from "axios";
+import {
+  Avatar,
+  Badge,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Typography,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
 
 var stompClient = null;
 const ChatRoom = () => {
@@ -22,52 +32,53 @@ const ChatRoom = () => {
     message: "",
   });
 
-  // const getAllUsers = async () => {
-  //   const response = await cdmApi.getAllUsers();
-  //   const data = response.data;
-  //   console.log("user data" + data);
-  //   const chats = new Map(data.content.map(user => [user.email, user]));
-  //   setPrivateChats(new Map(chats));
-  // };
+  // Ref for automatic scrolling
+  const messagesEndRef = useRef(null);
 
-  // Chat API functions
-const loadPublicChats = async () => {
-  try {
-    const response = await axios.get(`${config.url.API_BASE_URL}/api/chat/public-messages`);
-    setPublicChats(response.data);
-  } catch (error) {
-    console.error('Error loading public chats:', error);
-    // You might want to handle the error appropriately here
-  }
-};
+  // Scroll to the bottom of the messages list
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-const loadPrivateChats = async (senderName, receiverName) => {
-  try {
-    const response = await axios.get(
-      `${config.url.API_BASE_URL}/api/chat/private-messages/${senderName}/${receiverName}`
-    );
-    
-    if (response.data) {
-      privateChats.set(receiverName, response.data);
-      setPrivateChats(new Map(privateChats));
+  // Call scrollToBottom after each new message is received
+  useEffect(() => {
+    scrollToBottom();
+  }, [publicChats, privateChats]);
+
+
+  const loadPublicChats = async () => {
+    try {
+      const response = await axios.get(
+        `${config.url.API_BASE_URL}/api/chat/public-messages`
+      );
+      setPublicChats(response.data);
+    } catch (error) {
+      console.error("Error loading public chats:", error);
     }
-  } catch (error) {
-    console.error('Error loading private chats:', error);
-    // You might want to handle the error appropriately here
-  }
-};
+  };
+
+  const loadPrivateChats = async (senderName, receiverName) => {
+    try {
+      const response = await axios.get(
+        `${config.url.API_BASE_URL}/api/chat/private-messages/${senderName}/${receiverName}`
+      );
+
+      if (response.data) {
+        privateChats.set(receiverName, response.data);
+        setPrivateChats(new Map(privateChats));
+      }
+    } catch (error) {
+      console.error("Error loading private chats:", error);
+    }
+  };
 
   const handleUserClick = (receiverName) => {
-    console.log("user bam vao tab ng dung")
-    console.log(receiverName);
     loadPrivateChats(userData.username, receiverName);
   };
 
   useEffect(() => {
-    console.log(userData);
     connect();
     loadPublicChats();
-    // getAllUsers();
   }, []);
 
   const connect = () => {
@@ -104,7 +115,7 @@ const loadPrivateChats = async (senderName, receiverName) => {
         }
         break;
       case "MESSAGE":
-        setPublicChats(prevChats => [...prevChats, payloadData]);
+        setPublicChats((prevChats) => [...prevChats, payloadData]);
         break;
     }
   };
@@ -113,7 +124,7 @@ const loadPrivateChats = async (senderName, receiverName) => {
     console.log(payload);
     var payloadData = JSON.parse(payload.body);
     if (privateChats.get(payloadData.senderName)) {
-      setPrivateChats(prevChats => {
+      setPrivateChats((prevChats) => {
         const updatedChats = new Map(prevChats);
         updatedChats.get(payloadData.senderName).push(payloadData);
         return updatedChats;
@@ -134,6 +145,7 @@ const loadPrivateChats = async (senderName, receiverName) => {
     const { value } = event.target;
     setUserData({ ...userData, message: value });
   };
+
   const sendValue = () => {
     const now = new Date();
     if (stompClient) {
@@ -168,151 +180,230 @@ const loadPrivateChats = async (senderName, receiverName) => {
     }
   };
 
-  const handleUsername = (event) => {
-    const { value } = event.target;
-    setUserData({ ...userData, username: value });
-  };
-
-  const registerUser = () => {
-    connect();
-  };
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full h-screen items-center justify-start p-4 bg-gray-100 dark:bg-gray-800">
       {userData.connected ? (
-        <div className="chat-box flex flex-row h-full rounded-lg">
-          {/* chat list */}
-          <div className="w-1/5 m-2">
-            <ul>
-              <li
+        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg w-full flex">
+          {/* Chat List */}
+          <div className="w-1/4 pr-4 border-r border-gray-200 dark:border-gray-600">
+            <List disablePadding>
+              {" "}
+              {/* Add disablePadding here */}
+              <ListItem
+                button
                 onClick={() => {
                   setTab("CHATROOM");
                 }}
-                className={`member ${tab === "CHATROOM" && "active"}`}
+                className={`${
+                  tab === "CHATROOM"
+                    ? "bg-gray-200 dark:bg-gray-600"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-500"
+                } py-2`} // Reduce padding with py-2
               >
-                Chatroom
-              </li>
+                <ListItemText
+                  primary="Chatroom"
+                  className="dark:text-gray-200"
+                />
+              </ListItem>
               {[...privateChats.keys()].map((name, index) => (
-                <li
+                <ListItem
+                  button
                   onClick={() => {
                     setTab(name);
-                    handleUserClick(name)
+                    handleUserClick(name);
                   }}
-                  className={`member ${tab === name && "active"}`}
+                  className={`${
+                    tab === name
+                      ? "bg-gray-200 dark:bg-gray-600"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-500"
+                  } py-2`} // Reduce padding with py-2
                   key={index}
                 >
-                  {name}
-                </li>
+                  <ListItemAvatar>
+                    <Avatar className="dark:bg-gray-500">
+                      {name.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary={name} className="dark:text-gray-200" />
+                </ListItem>
               ))}
-            </ul>
+            </List>
           </div>
-          {/* public chat content */}
-          {tab === "CHATROOM" && (
-            <div className="w-4/5 ml-2">
-              <ul className="h-4/5 border-solid border-2 border-black m-2 rounded overflow-y-auto max-h-96">
-                {publicChats.map((chat, index) => (
-                  <li
-                    className={`message ${
-                      chat.senderName === userData.username && "self"
-                    }`}
-                    key={index}
-                  >
-                    {chat.senderName !== userData.username && (
-                      <div className="avatar">
-                        {/* <img
-                          class="inline-block h-6 w-6 rounded-full mr-1"
-                          src={user.avatar}
-                          alt=""
-                        ></img> */}
-                        {chat.senderName}
-                      </div>
-                    )}
-                        <div className="message-data">{chat.message}</div>      
-                    {chat.senderName === userData.username && (
-                      <div className="avatar self">                        
-                        {chat.senderName}
-                        {/* <img
-                          class="inline-block h-6 w-6 rounded-full mr-1"
-                          src={user.avatar}
-                          alt=""
-                        ></img> */}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
 
-              <div className="w-full flex flex-row mt-2">
-                <input
-                  type="text"
-                  className="w-4/5 rounded bg-black text-white ml-2 bg-gray-500 focus:outline-none focus:ring focus:ring-violet-300"
-                  placeholder="enter the message"
-                  value={userData.message}
-                  onChange={handleMessage}
-                />
-                <button
-                  type="button"
-                  className="w-1/5 text-black cursor-pointer hover:bg-gray-300 ml-2 mr-2"
-                  onClick={sendValue}
+          {/* Chat Content */}
+          <div className="w-3/4">
+            {/* Public Chat */}
+            {tab === "CHATROOM" && (
+              <div className="flex flex-col h-full">
+                {/* Set a fixed height for the chat messages container */}
+                <div
+                  className="overflow-auto flex-grow"
+                  style={{ maxHeight: "70vh" }}
                 >
-                  send
-                </button>
-              </div>
-            </div>
-          )}
-          {/* private chat */}
-          {tab !== "CHATROOM" && (
-            <div className="w-4/5 ml-2">
-              <ul className="h-4/5 border-solid border-2 border-black m-2 rounded">
-                {[...privateChats.get(tab)].map((chat, index) => (
-                  <li
-                    className={`message ${
-                      chat.senderName === userData.username && "self"
-                    }`}
-                    key={index}
-                  >
-                    {chat.senderName !== userData.username && (
-                      <div className="avatar">{chat.senderName}</div>
-                    )}
-                    <div className="message-data">{chat.message}</div>
-                    {chat.senderName === userData.username && (
-                      <div className="avatar self">{chat.senderName}</div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                  <List disablePadding>
+                    {publicChats.map((chat, index) => (
+                      <ListItem
+                        key={index}
+                        className="w-full"
+                        style={{
+                          justifyContent:
+                            chat.senderName === userData.username
+                              ? "flex-end"
+                              : "flex-start",
+                        }}
+                      >
+                        <div
+                          className={`flex items-start w-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl ${
+                            chat.senderName === userData.username
+                              ? "flex-row-reverse"
+                              : ""
+                          }`}
+                        >
+                          {chat.senderName !== userData.username && (
+                            <Avatar className="mr-2 dark:bg-gray-500">
+                              {chat.senderName.charAt(0).toUpperCase()}
+                            </Avatar>
+                          )}
+                          <div
+                            className={`p-3 rounded-lg shadow-md ${
+                              chat.senderName === userData.username
+                                ? "bg-blue-100 dark:bg-blue-500"
+                                : "bg-gray-100 dark:bg-gray-600"
+                            }`}
+                          >
+                            {chat.senderName !== userData.username && (
+                              <Typography
+                                variant="caption"
+                                className="font-bold block dark:text-gray-200"
+                              >
+                                {chat.senderName}
+                              </Typography>
+                            )}
+                            <Typography
+                              variant="body2"
+                              className="whitespace-pre-wrap dark:text-gray-100"
+                            >
+                              {chat.message}
+                            </Typography>
+                          </div>
+                        </div>
+                      </ListItem>
+                    ))}
+                    {/* Ref for automatic scrolling */}
+                    <div ref={messagesEndRef} />
+                  </List>
+                </div>
 
-              <div className="w-full flex flex-row mt-2">
-                <input
-                  type="text"
-                  className="w-4/5 rounded bg-black text-white ml-2"
-                  placeholder="enter the message"
-                  value={userData.message}
-                  onChange={handleMessage}
-                />
-                <button
-                  type="button"
-                  className="w-1/5 text-black cursor-pointer"
-                  onClick={sendPrivateValue}
-                >
-                  send
-                </button>
+                <div className="mt-4 flex items-center">
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Enter the message"
+                    value={userData.message}
+                    onChange={handleMessage}
+                    className="dark:border-gray-500"
+                    InputProps={{
+                      className: "h-full rounded-l-full dark:text-gray-100 dark:bg-gray-600",
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={sendValue}
+                    className="h-full rounded-r-full dark:bg-blue-600 dark:text-gray-100"
+                    endIcon={<SendIcon />}
+                  >
+                    Send
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Private Chat */}
+            {tab !== "CHATROOM" && (
+              <div className="flex flex-col h-full">
+                {/* Set a fixed height for the chat messages container */}
+                <div
+                  className="overflow-y-auto flex-grow"
+                  style={{ maxHeight: "70vh" }}
+                >
+                  <List className="flex flex-col gap-2 p-4">
+                    {[...privateChats.get(tab)].map((chat, index) => (
+                      <ListItem
+                        key={index}
+                        className="flex"
+                        style={{
+                          justifyContent:
+                            chat.senderName === userData.username
+                              ? "flex-end"
+                              : "flex-start",
+                        }}
+                      >
+                        <div
+                          className={`flex items-start w-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl ${
+                            chat.senderName === userData.username
+                              ? "flex-row-reverse"
+                              : ""
+                          }`}
+                        >
+                          {chat.senderName !== userData.username && (
+                            <Avatar className="mr-2 dark:bg-gray-500">
+                              {chat.senderName.charAt(0).toUpperCase()}
+                            </Avatar>
+                          )}
+                          <div
+                            className={`p-3 rounded-lg shadow-md ${
+                              chat.senderName === userData.username
+                                ? "bg-blue-100 dark:bg-blue-500"
+                                : "bg-gray-100 dark:bg-gray-600"
+                            }`}
+                          >
+                            <Typography
+                              variant="body2"
+                              className="dark:text-gray-100"
+                            >
+                              {chat.message}
+                            </Typography>
+                          </div>
+                        </div>
+                      </ListItem>
+                    ))}
+                    {/* Ref for automatic scrolling */}
+                    <div ref={messagesEndRef} />
+                  </List>
+                </div>
+
+                <div className="mt-4 flex items-center">
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Enter the message"
+                    value={userData.message}
+                    onChange={handleMessage}
+                    className="rounded-r-none dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500"
+                    InputProps={{
+                      className: "dark:text-gray-100",
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={sendPrivateValue}
+                    className="rounded-l-none dark:bg-blue-600 dark:text-gray-100"
+                    endIcon={<SendIcon />}
+                  >
+                    Send
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="register">
-          <input
-            id="user-name"
-            placeholder="Enter your name"
-            name="userName"
-            value={userData.username}
-            onChange={handleUsername}
-            margin="normal"
-          />
-          <button type="button" onClick={registerUser}>
-            connect
-          </button>
+          <Typography variant="h5" className="dark:text-gray-200">
+            Please connect to start chatting
+          </Typography>
         </div>
       )}
     </div>
