@@ -3,7 +3,7 @@ import Hero from "./Sections/Hero"
 import Subcribe from "./Sections/Subcribe";
 import Footer from "./Sections/Footer";
 import About from "./Sections/About";
-import './index.css'
+// import './index.css'
 
 function LandingPage() {
   return (
