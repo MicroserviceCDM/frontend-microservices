@@ -23,41 +23,10 @@ function ForgotPassword() {
       
         try {
             cdmApi.resetPassword(mail)
-            .then(async response => { 
-                console.log(response);
-                resetPassword = response.data;
-                let ebody = `
-                Hey there,
-                <br />           
-                Someone reset a password for your CDM account.
-                <br />        
-                Here is your reset password: ${resetPassword}
-                <br />              
-                Now you can login and change your new password in profile settings.🙂
-                `;
-
-                await Email.send({
-                    SecureToken : "9a5500c0-60b0-49ff-b2ba-589dae7828e7", 
-                    To : mail, 
-                    From : "21521933@gm.uit.edu.vn",
-                    Subject : "Reset Your Password",
-                    html: '<p>This is an <strong>HTML email</strong></p>',
-                    Body : ebody,
-                }).then(
-                message => alert(message)
-                );
-            })
-            .catch(error => {
-                alert("reset failed!");
-                console.log(error);
-            })
         }
         catch(error) {
             console.log(error);
         }
-
-        
-    
     };
 
     return (

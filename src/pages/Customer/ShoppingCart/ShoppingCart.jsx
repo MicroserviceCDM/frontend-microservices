@@ -61,7 +61,7 @@ const ShoppingCart = () => {
 
   useEffect(() => {
     // fetchInfo();
-    // This function will run every time the component renders
+    // // This function will run every time the component renders
     // const cart = localStorage.getItem("cart");
     // setCarts(JSON.parse(cart));
     handlePaymentReturn();
@@ -127,8 +127,9 @@ const ShoppingCart = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const responseCode = urlParams.get("vnp_ResponseCode");
     if (responseCode === "00") {
+      const totalAmount = urlParams.get("vnp_Amount");
       const orderData = {
-        totalAmount: total + shippingFee,
+        totalAmount: totalAmount,
         email: userData[0].username,
         shippingAddress: userData[0].address,
         voucherValue: 10,
@@ -243,32 +244,16 @@ const ShoppingCart = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-20 ${isDarkMode ? 'bg-[#1a1f2e] text-white' : 'bg-gray-100 text-gray-800'}`}>
+    <div className={`min-h-screen pt-20 bg-[#1a1f2e] text-white dark:bg-gray-100 dark:text-gray-800`}>
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items Section */}
           <div className="lg:col-span-2">
-            <div className={`rounded-xl shadow-lg p-6 ${isDarkMode ? 'bg-[#242b3d]' : 'bg-white'}`}>
+            <div className={`rounded-xl shadow-lg p-6 bg-[#242b3d] dark:bg-white`}>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Giỏ hàng của bạn</h2>
                 <div className="flex items-center gap-4">
-                  {/* Dark Mode Toggle Button */}
-                  <button
-                    onClick={toggleDarkMode}
-                    className={`p-2 rounded-full transition-colors ${
-                      isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-600'
-                    }`}
-                  >
-                    {isDarkMode ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                      </svg>
-                    )}
-                  </button>
+
                   <button
                     onClick={handleDeleteCart}
                     className="text-red-500 hover:text-red-400 font-medium"
@@ -282,9 +267,7 @@ const ShoppingCart = () => {
                 {carts.map((cart) => (
                   <div 
                     key={cart.id} 
-                    className={`flex items-center gap-4 p-4 rounded-lg relative ${
-                      isDarkMode ? 'bg-[#2a324a]' : 'bg-gray-50'
-                    }`}
+                    className={`flex items-center gap-4 p-4 rounded-lg relative bg-[#2a324a] dark:bg-gray-50`}
                   >
                     <img 
                       src={cart.imgSrc} 
@@ -297,26 +280,18 @@ const ShoppingCart = () => {
                         <div className="flex items-center gap-3 mt-2">
                           <button
                             onClick={() => handleQuantityChange(cart.id, -1)}
-                            className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                              isDarkMode 
-                                ? 'bg-gray-700 hover:bg-gray-600' 
-                                : 'bg-gray-200 hover:bg-gray-300'
-                            }`}
+                            className={`w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 dark:bg-gray-200 hover:bg-gray-300`}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                             </svg>
                           </button>
-                          <span className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <span className={`text-lg text-gray-300 dark:text-gray-700`}>
                             {cart.quantity}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(cart.id, 1)}
-                            className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                              isDarkMode 
-                                ? 'bg-gray-700 hover:bg-gray-600' 
-                                : 'bg-gray-200 hover:bg-gray-300'
-                            }`}
+                            className={`w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 dark:bg-gray-200 dark:hover:bg-gray-300`}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -344,17 +319,17 @@ const ShoppingCart = () => {
 
           {/* Order Summary Section */}
           <div className="lg:col-span-1">
-            <div className={`rounded-xl shadow-lg p-6 sticky top-24 ${isDarkMode ? 'bg-[#242b3d]' : 'bg-white'}`}>
+            <div className={`rounded-xl shadow-lg p-6 sticky top-24 bg-[#242b3d] dark:bg-white`}>
               <h2 className="text-xl font-bold mb-6">Tổng đơn hàng</h2>
               
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Tạm tính</span>
+                  <span className={`text-gray-400 dark:text-gray-600`}>Tạm tính</span>
                   <span>{total.toLocaleString()} VND</span>
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Phí vận chuyển</span>
+                  <span className={`text-gray-400 dark:text-gray-600`}>Phí vận chuyển</span>
                   <span>{shippingFee.toLocaleString()} VND</span>
                 </div>
 
@@ -365,7 +340,7 @@ const ShoppingCart = () => {
                   </div>
                 )}
 
-                <div className={`border-t pt-4 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                <div className={`border-t pt-4 border-gray-600 dark:border-gray-200`}>
                   <div className="flex justify-between">
                     <span className="font-bold">Tổng cộng</span>
                     <span className="font-bold text-blue-500">
@@ -376,7 +351,7 @@ const ShoppingCart = () => {
 
                 {/* Payment Method Selection */}
                 <div className="space-y-2">
-                  <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                  <p className={`font-medium text-white dark:text-gray-800`}>
                     Phương thức thanh toán
                   </p>
                   <div className="flex gap-4">
@@ -385,9 +360,7 @@ const ShoppingCart = () => {
                       className={`flex-1 py-2 px-4 rounded-lg border transition-colors ${
                         paymentMethod === "Cash"
                           ? 'bg-blue-500 text-white border-blue-500'
-                          : isDarkMode
-                            ? 'border-gray-600 text-white hover:border-blue-500'
-                            : 'border-gray-300 text-gray-700 hover:border-blue-500'
+                          : 'border-gray-600 text-white hover:border-blue-500 dark:border-gray-300 dark:text-gray-700 dark:hover:border-blue-500'
                       }`}
                     >
                       Tiền mặt
@@ -397,9 +370,7 @@ const ShoppingCart = () => {
                       className={`flex-1 py-2 px-4 rounded-lg border transition-colors ${
                         paymentMethod === "VNPay"
                           ? 'bg-blue-500 text-white border-blue-500'
-                          : isDarkMode
-                            ? 'border-gray-600 text-white hover:border-blue-500'
-                            : 'border-gray-300 text-gray-700 hover:border-blue-500'
+                          : 'border-gray-600 text-white hover:border-blue-500 dark:border-gray-300 dark:text-gray-700 dark:hover:border-blue-500'
                       }`}
                     >
                       VNPay
@@ -413,11 +384,7 @@ const ShoppingCart = () => {
                     <input
                       type="text"
                       placeholder="Nhập mã giảm giá"
-                      className={`flex-1 px-4 py-2 rounded-lg border ${
-                        isDarkMode 
-                          ? 'bg-[#2a324a] border-gray-600' 
-                          : 'bg-white border-gray-300'
-                      }`}
+                      className={`flex-1 px-4 py-2 rounded-lg border bg-[#2a324a] border-gray-600 dark:bg-white dark:border-gray-300`}
                       onChange={(e) => setVoucherCode(e.target.value)}
                     />
                     <button

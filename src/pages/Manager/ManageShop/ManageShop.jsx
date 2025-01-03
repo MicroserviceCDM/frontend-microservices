@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import ManagerSideBar from '../../../layouts/components/ManagerSideBar';
 import Box from '@mui/material/Box';
 import { DataGrid, GridToolbar, GridRowModes, GridToolbarContainer, GridActionsCellItem, GridRowEditStopReasons } from '@mui/x-data-grid';
@@ -24,29 +24,44 @@ import ShopForm from './ShopForm';
 
 const ManageShopPage = () => {
 
-  const [rows, setRows] = React.useState([]);
-  const [formState, setFormState] = React.useState(null);
-  
+  const [rows, setRows] = useState([]);
+  const [formState, setFormState] = useState(null);
+
   const [dataChangeFlag, setDataChangeFlag] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
+  const [totalElements, setTotalElements] = useState(0);
+  const [sortModel, setSortModel] = useState([{ field: 'index', sort: 'asc' }]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await cdmApi.getAllInventory(
+        page,
+        pageSize,
+        // sortModel[0].field,
+        sortModel[0].sort.toUpperCase()
+      );
+      const newArray = [];
+      response.data.content.forEach((item) => newArray.push(item.products[0]));
+      const addedIndexData = newArray.map((row, index) => ({
+        ...row,
+        index: page * pageSize + index + 1,
+      }));
+      setRows(addedIndexData);
+      setTotalElements(response.data.totalElements);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, sortModel]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const response = await axios.get('http://localhost:8083/api/v1/products/getAllCars');
-        const response = await cdmApi.getAllInventory(10000);
-        console.log(response.data.content)
-        const newArray = [];
-        response.data.content.forEach((item) => newArray.push(item.products[0]));
-        console.log(newArray);
-        const addedIndexData = newArray.map((row, index) => ({ ...row, index: index + 1 }));
-        setRows(addedIndexData); 
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     fetchData();
-  
-  }, [dataChangeFlag]);
+  }, [fetchData]);
 
   
   //Modal
@@ -341,23 +356,23 @@ const ManageShopPage = () => {
         {/* Data Grid */}
         <div className="mt-[15px]">
           {renderConfirmDialog()}
-          <Box height="544px" width="100%" maxWidth="100%" 
+          <Box height="544px" width="100%"  
             sx={{
               '& .MuiDataGrid-root': {
                 border: 'none',
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 '.dark &': {
-                    backgroundColor: '#272727',
-                  },
+                  backgroundColor: '#272727',
+                },
               },
               '& .MuiDataGrid-cell': {
                 borderBottom: 'none',
                 fontSize: '12px',
                 color: 'black',
                 '.dark &': {
-                    color: 'white',
-                }
+                  color: 'white',
+                },
               },
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#607286',
@@ -366,14 +381,13 @@ const ManageShopPage = () => {
                 fontSize: '14px',
                 borderRadius: '8px 8px 0 0',
                 '.dark &': {
-                    backgroundColor: '#474747',
-                }
+                  backgroundColor: '#474747',
+                },
               },
               '& .MuiDataGrid-footerContainer': {
                 borderRadius: '0 0 8px 8px',
               },
-              '& .MuiDataGrid-virtualScroller': {
-              },
+              '& .MuiDataGrid-virtualScroller': {},
               '& .MuiDataGrid-row--editing .MuiDataGrid-cell': {
                 boxShadow:
                   '0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important',
@@ -381,71 +395,99 @@ const ManageShopPage = () => {
               '& .MuiCheckbox-root': {
                 color: `#294bd6 !important`,
                 '.dark &': {
-                    color: `#8ab4f8 !important`,
-                }
+                  color: `#8ab4f8 !important`,
+                },
               },
               '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
                 outline: 'none !important',
               },
-              '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+              '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
+              {
                 outline: 'none !important',
               },
               '& .MuiTablePagination-displayedRows': {
-                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                color: 'black', 
                 '.dark &': {
-                    color: '#fff', // White text color in dark mode
-                }
+                  color: '#fff', 
+                },
               },
               '& .MuiTablePagination-selectLabel': {
-                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                color: 'black',
                 '.dark &': {
-                    color: '#fff', // White text color in dark mode
-                }
+                  color: '#fff', 
+                },
               },
               '& .MuiSelect-select': {
-                color: 'white', // Default text color is black, so we need to specify white for dark mode
+                color: 'black', 
                 '.dark &': {
-                    color: '#fff', // White text color in dark mode
-                    
+                  color: '#fff', 
                 },
                 '&.Mui-focused': {
-                    backgroundColor: 'transparent', // Remove the default background on focus
+                  backgroundColor: 'transparent', 
                 },
                 '&:focus': {
-                    backgroundColor: 'transparent', // Remove the default background on focus
+                  backgroundColor: 'transparent', 
                 },
                 '&:hover': {
-                  backgroundColor: 'transparent', // Remove the default background on hover
+                  backgroundColor: 'transparent',
                 },
               },
               '& .MuiTablePagination-selectIcon': {
-                color: 'white',
+                color: 'black',
                 '.dark &': {
-                    color: '#fff', // White icon color in dark mode
-                }
+                  color: '#fff', 
+                },
               },
               '& .MuiTablePagination-actions button': {
-                color: 'white',
+                color: 'black',
                 '.dark &': {
-                    color: '#fff', // White icon color in dark mode
+                  color: '#fff', 
                 },
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)', // Add a subtle hover effect
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)', 
                   '.dark &': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Add a subtle hover effect in dark mode
-                  }
-                }
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                  },
+                },
               },
               '& .MuiTablePagination-toolbar': {
                 borderTop: '1px solid rgba(224, 224, 224, 1)',
                 '.dark &': {
-                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', // Lighter border in dark mode
-                }
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', 
+                },
               },
               '& .MuiTablePagination-root': {
                 borderTop: '1px solid rgba(224, 224, 224, 1)',
                 '.dark &': {
-                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', // Lighter border in dark mode
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', 
+                },
+              },
+              // Styling the GridToolbar (for light and dark modes)
+              '& .MuiDataGrid-toolbarContainer': {
+                padding: '0.5rem',
+                backgroundColor: 'white', // Light mode background
+                '.dark &': {
+                  backgroundColor: '#333333', // Dark mode background
+                },
+                '& .MuiButton-text': {
+                  color: 'black', // Light mode text
+                  '.dark &': {
+                    color: 'white', // Dark mode text
+                  },
+                },
+                '& .MuiInputBase-root': { // Quick filter input
+                  color: 'black', // Light mode text
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)', // Subtle background in light mode
+                  '.dark &': {
+                    color: 'white', // Dark mode text
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Subtle background in dark mode
+                  },
+                },
+                '& .MuiSvgIcon-root': { // Icons
+                  color: 'black',
+                  '.dark &': {
+                    color: 'white',
+                  }
                 }
               },
             }}
@@ -453,7 +495,30 @@ const ManageShopPage = () => {
             <DataGrid
               rows={rows}
               columns={columns}
-              checkboxSelection
+              rowCount={totalElements}
+              loading={loading}
+              pagination
+              page={page}
+              pageSize={pageSize}
+              paginationMode="server"
+              sortingMode="server"
+              sortModel={sortModel}
+              onPaginationModelChange={(model) => {
+                setPage(model.page);
+                setPageSize(model.pageSize);
+              }}
+              onSortModelChange={(model) => {
+                if (model.length) {
+                  setSortModel(model);
+                } else {
+                  setSortModel([{ field: 'index', sort: 'asc' }]);
+                }
+              }}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 100, page: 0 },
+                },                
+              }}
               slots={{
                 toolbar: GridToolbar,
               }}
@@ -464,11 +529,6 @@ const ManageShopPage = () => {
                 },
                 toolbar: {
                   showQuickFilter: true,
-                },
-              }}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 25, page: 0 },
                 },
               }}
               disableDensitySelector

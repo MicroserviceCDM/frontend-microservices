@@ -102,10 +102,13 @@ function getUserMe(username) {
   });
 }
 
-function getAllUsers(amount = 10) {
+function getAllUsers(page, size, sortBy, direction) {
   return instance.get("/auth/getAllUsers", {
     params: {
-      size: amount,
+      page,
+      size,
+      sortBy,
+      direction,
     },
     headers: {
       Authorization: bearerAuth(localStorage.getItem("accessToken")),
@@ -312,10 +315,13 @@ function deleteShop(id) {
   );
 }
 
-function getAllInventory(amount = 10) {
+function getAllInventory(page, pageSize, sortBy, direction) {
   return instance.get("/api/v1/inventory/getInventory", {
     params: {
-      size: amount,
+      page,
+      pageSize,
+      sortBy,
+      direction,
     },
     headers: {
       Authorization: bearerAuth(localStorage.getItem("accessToken")),

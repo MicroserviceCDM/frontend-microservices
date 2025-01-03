@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SideBarStaff from "../../../layouts/components/SideBarStaff";
 import Box from "@mui/material/Box";
 import {
@@ -31,25 +31,40 @@ const StaffManageCustomerPage = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [snackbar, setSnackbar] = useState(null);
 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [sortModel, setSortModel] = useState([{ field: 'index', sort: 'asc' }]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await cdmApi.getAllUsers(
+        page,
+        pageSize,
+        sortModel[0].field,
+        sortModel[0].sort.toUpperCase()
+      );
+      const filtedRoleData = response.data.content.filter(
+        (row) => row.role === 'CUSTOMER'
+      );
+      const addedIndexData = filtedRoleData.map((row, index) => ({
+        ...row,
+        index: page * pageSize + index + 1,
+      }));
+      setRows(addedIndexData);
+      setTotalElements(response.data.totalElements);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, sortModel]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await cdmApi.getAllUsers(1000);
-        const filtedRoleData = response.data.content.filter(
-          (row) => row.role === "CUSTOMER"
-        );
-        
-        const addedIndexData = filtedRoleData.map((row, index) => ({
-          ...row,
-          index: index + 1,
-        }));
-        setRows(addedIndexData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
     fetchData();
-  }, [dataChangeFlag]);
+  }, [fetchData]);
 
   const handleCloseSnackbar = () => setSnackbar(null);
 
@@ -302,122 +317,169 @@ const StaffManageCustomerPage = () => {
 
         <div className="mt-4">
           {renderConfirmDialog()}
-          <Box
-            height="544px"
-            width="100%"
-            maxWidth="100%"
+          <Box height="544px" width="100%"  
             sx={{
-              "& .MuiDataGrid-root": {
-                border: "none",
-                backgroundColor: "white", // Background color in light mode
-                borderRadius: "8px",
-                ".dark &": {
-                  backgroundColor: "#272727", // Background color in dark mode
+              '& .MuiDataGrid-root': {
+                border: 'none',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                '.dark &': {
+                  backgroundColor: '#272727',
                 },
               },
-              "& .MuiDataGrid-cell": {
-                borderBottom: "none",
-                fontSize: "12px",
-                color: "black", // Text color in light mode
-                ".dark &": {
-                  color: "white", // Text color in dark mode
+              '& .MuiDataGrid-cell': {
+                borderBottom: 'none',
+                fontSize: '12px',
+                color: 'black',
+                '.dark &': {
+                  color: 'white',
                 },
               },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#607286", // Background color in light mode
-                color: "#fff",
-                borderBottom: "none",
-                fontSize: "14px",
-                borderRadius: "8px 8px 0 0",
-                ".dark &": {
-                  backgroundColor: "#474747", // Background color in dark mode
+              '& .MuiDataGrid-columnHeaders': {
+                backgroundColor: '#607286',
+                color: '#fff',
+                borderBottom: 'none',
+                fontSize: '14px',
+                borderRadius: '8px 8px 0 0',
+                '.dark &': {
+                  backgroundColor: '#474747',
                 },
               },
-              "& .MuiDataGrid-footerContainer": {
-                borderRadius: "0 0 8px 8px",
+              '& .MuiDataGrid-footerContainer': {
+                borderRadius: '0 0 8px 8px',
               },
-              "& .MuiDataGrid-virtualScroller": {},
-              "& .MuiDataGrid-row--editing .MuiDataGrid-cell": {
+              '& .MuiDataGrid-virtualScroller': {},
+              '& .MuiDataGrid-row--editing .MuiDataGrid-cell': {
                 boxShadow:
-                  "0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important",
+                  '0px 4px 1px 0px rgba(0,0,0,0.2), 0px 0px 1px 0px rgba(0,0,0,0.14), 0px -8px 10px 0px rgba(0,0,0,0.12) !important',
               },
-              "& .MuiCheckbox-root": {
-                color: `#294bd6 !important`, // Checkbox color in light mode
-                ".dark &": {
-                  color: `#8ab4f8 !important`, // Checkbox color in dark mode
-                },
-              },
-              "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
-                outline: "none !important",
-              },
-              "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within":
-                {
-                  outline: "none !important",
-                },
-              // Light mode styles for pagination elements:
-              "& .MuiTablePagination-displayedRows": {
-                color: "black", // Text color in light mode
-                ".dark &": {
-                  color: "#fff", // Text color in dark mode
+              '& .MuiCheckbox-root': {
+                color: `#294bd6 !important`,
+                '.dark &': {
+                  color: `#8ab4f8 !important`,
                 },
               },
-              "& .MuiTablePagination-selectLabel": {
-                color: "black", // Text color in light mode
-                ".dark &": {
-                  color: "#fff", // Text color in dark mode
+              '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+                outline: 'none !important',
+              },
+              '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
+              {
+                outline: 'none !important',
+              },
+              '& .MuiTablePagination-displayedRows': {
+                color: 'black', 
+                '.dark &': {
+                  color: '#fff', 
                 },
               },
-              "& .MuiSelect-select": {
-                color: "black", // Text color in light mode
-                "&.Mui-focused": {
-                  backgroundColor: "transparent",
-                },
-                "&:focus": {
-                  backgroundColor: "transparent",
-                },
-                "&:hover": {
-                  backgroundColor: "transparent",
-                },
-                ".dark &": {
-                  color: "#fff", // Text color in dark mode
+              '& .MuiTablePagination-selectLabel': {
+                color: 'black',
+                '.dark &': {
+                  color: '#fff', 
                 },
               },
-              "& .MuiTablePagination-selectIcon": {
-                color: "black", // Icon color in light mode
-                ".dark &": {
-                  color: "#fff", // Icon color in dark mode
+              '& .MuiSelect-select': {
+                color: 'black', 
+                '.dark &': {
+                  color: '#fff', 
+                },
+                '&.Mui-focused': {
+                  backgroundColor: 'transparent', 
+                },
+                '&:focus': {
+                  backgroundColor: 'transparent', 
+                },
+                '&:hover': {
+                  backgroundColor: 'transparent',
                 },
               },
-              "& .MuiTablePagination-actions button": {
-                color: "black", // Button color in light mode
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.1)", // Hover effect in light mode
+              '& .MuiTablePagination-selectIcon': {
+                color: 'black',
+                '.dark &': {
+                  color: '#fff', 
                 },
-                ".dark &": {
-                  color: "#fff", // Button color in dark mode
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.2)", // Hover effect in dark mode
+              },
+              '& .MuiTablePagination-actions button': {
+                color: 'black',
+                '.dark &': {
+                  color: '#fff', 
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+                  '.dark &': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)', 
                   },
                 },
               },
-              "& .MuiTablePagination-toolbar": {
-                borderTop: "1px solid rgba(224, 224, 224, 1)", // Border in light mode
-                ".dark &": {
-                  borderTop: "1px solid rgba(224, 224, 224, 0.2)", // Border in dark mode
+              '& .MuiTablePagination-toolbar': {
+                borderTop: '1px solid rgba(224, 224, 224, 1)',
+                '.dark &': {
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', 
                 },
               },
-              "& .MuiTablePagination-root": {
-                borderTop: "1px solid rgba(224, 224, 224, 1)", // Border in light mode
-                ".dark &": {
-                  borderTop: "1px solid rgba(224, 224, 224, 0.2)", // Border in dark mode
+              '& .MuiTablePagination-root': {
+                borderTop: '1px solid rgba(224, 224, 224, 1)',
+                '.dark &': {
+                  borderTop: '1px solid rgba(224, 224, 224, 0.2)', 
                 },
+              },
+              // Styling the GridToolbar (for light and dark modes)
+              '& .MuiDataGrid-toolbarContainer': {
+                padding: '0.5rem',
+                backgroundColor: 'white', // Light mode background
+                '.dark &': {
+                  backgroundColor: '#333333', // Dark mode background
+                },
+                '& .MuiButton-text': {
+                  color: 'black', // Light mode text
+                  '.dark &': {
+                    color: 'white', // Dark mode text
+                  },
+                },
+                '& .MuiInputBase-root': { // Quick filter input
+                  color: 'black', // Light mode text
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)', // Subtle background in light mode
+                  '.dark &': {
+                    color: 'white', // Dark mode text
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Subtle background in dark mode
+                  },
+                },
+                '& .MuiSvgIcon-root': { // Icons
+                  color: 'black',
+                  '.dark &': {
+                    color: 'white',
+                  }
+                }
               },
             }}
           >
             <DataGrid
               rows={rows}
               columns={columns}
-              checkboxSelection
+              rowCount={totalElements}
+              loading={loading}
+              pagination
+              page={page}
+              pageSize={pageSize}
+              paginationMode="server"
+              sortingMode="server"
+              sortModel={sortModel}
+              onPaginationModelChange={(model) => {
+                setPage(model.page);
+                setPageSize(model.pageSize);
+              }}
+              onSortModelChange={(model) => {
+                if (model.length) {
+                  setSortModel(model);
+                } else {
+                  setSortModel([{ field: 'index', sort: 'asc' }]);
+                }
+              }}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 10, page: 0 },
+                },                
+              }}
               slots={{
                 toolbar: GridToolbar,
               }}
@@ -430,12 +492,9 @@ const StaffManageCustomerPage = () => {
                   showQuickFilter: true,
                 },
               }}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 25, page: 0 },
-                },
-              }}
+              disableDensitySelector
               isCellEditable={() => false}
+              
             />
             {!!snackbar && (
               <Snackbar

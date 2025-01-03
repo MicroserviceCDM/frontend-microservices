@@ -123,7 +123,7 @@ function OderdetailModal({ setOpenModal, open, data }) {
                         </p>
                       </div>
                     </div>
-                    <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+                    <div className="hidden shrink-0 sm:flex sm:flex-col mr-2 sm:items-end">
                       <p className="text-sm leading-6 text-gray-900 dark:text-gray-200">
                         Quantity: {item.quantity}
                       </p>
@@ -136,6 +136,12 @@ function OderdetailModal({ setOpenModal, open, data }) {
                       </p>
                       <p className="text-sm leading-6 text-gray-900 dark:text-gray-200">
                         Color: {item.color}
+                      </p>
+                      <p className="text-sm leading-6 text-gray-900 dark:text-gray-200">
+                        Size: {item.size}
+                      </p>
+                      <p className="text-sm leading-6 text-gray-900 dark:text-gray-200">
+                        Voucher Value: {item.voucherValue}
                       </p>
                     </div>
                   </li>

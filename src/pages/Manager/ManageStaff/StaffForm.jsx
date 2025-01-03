@@ -1,175 +1,192 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 
-
 const StaffModalForm = (props) => {
-  
-  //Form
-  const [formState, setFormState] = React.useState( 
+  // Form State
+  const [formState, setFormState] = useState(
     props.defaultValues || {
       name: '',
       email: '',
       phone_number: '',
-      address:'',
+      address: '',
       avatar: '',
-  });
+    }
+  );
 
+  // Image State
+  const inputRef = useRef(null);
+  const [formImage, setFormImage] = useState(formState.avatar);
 
-  //Image
-  const inputRef = React.useRef(null);
-  const [formImage, setFormImage] = React.useState(formState.avatar);
+  // Handle Image Change
   const handleImageChange = (e) => {
-    setFormState({...formState, avatar: e.target.files[0]});
-    setFormImage(URL.createObjectURL(e.target.files[0]));
-  }
-
-
-
-
-  const handleChange = (e) => {
-    setFormState({...formState, [e.target.name]: e.target.value});
-  }
-
-  const [errors, setErrors] = React.useState();
-
-  const validateFrom = () => {
-    if(formState.trim && formState.description && formState.price && formState.model && formState.status){
-      setErrors(""); 
-      return true;
-      } 
-    else{
-      let errorFields = [];
-      for(const [key, value] of Object.entries(formState)){
-        if(!value) 
-          errorFields.push(key);
-      }
-      setErrors(errorFields.join(', '));
-      return false;
+    if (e.target.files[0]) {
+      setFormState({ ...formState, avatar: e.target.files[0] });
+      setFormImage(URL.createObjectURL(e.target.files[0]));
     }
   };
- 
+
+  // Handle Input Change
+  const handleChange = (e) => {
+    setFormState({ ...formState, [e.target.name]: e.target.value });
+  };
+
+  // Form Validation
+  const [errors, setErrors] = useState();
+
+  // Handle Form Submission
   const handleSubmitForm = (e) => {
     e.preventDefault();
-
-    //if(!validateFrom()) return;
     props.onSubmit(formState);
+  };
 
-  }
   return (
-    <div className="flex fixed z-10 left-0 top-0 w-full h-full bg-black/80 modal-container" 
-         onClick={(e) => {
-            if(e.target.classList.contains('modal-container')) props.closeModel();
-         }}
+    <div
+      className="fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-black bg-opacity-80 modal-container flex items-center justify-center" // Add flex, items-center, justify-center
+      onClick={(e) => {
+        if (e.target.classList.contains('modal-container')) props.closeModel();
+      }}
     >
-      
-        <form onSubmit={handleSubmitForm} className=" max-sm:my-auto my-auto py-6 px-9 w-[40%] max-lg:overflow-y-scroll ml-[30%] bg-white rounded-md
-                                            max-lg:mx-auto max-lg:w-[90%] ">
-          
-          <div>
-            <label  htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-              Name
-            </label>
-            <input type="text" name="email" id="email" value={formState.email}  onChange={handleChange}
-                className="mt-2  w-[100%] rounded-md border border-[#e0e0e0] bg-white py-[8px] px-4 text-base font-medium outline-none focus:border-[#1F2937] focus:shadow-md"
-            />
-          </div>
-  
-          <div className="mt-[20px] grid grid-cols-1 gap-x-4 max-lg:grid-cols-1">
-            <div className='col-span-1'>
-              <label  htmlFor="phone_number" className="block text-sm font-medium leading-6 text-gray-900">
-                Phone
-              </label>
-              <input type="text" name="phone_number" id="phone_number" value={formState.phone_number}  onChange={handleChange}
-                  className="mt-2  w-[100%] rounded-md border border-[#e0e0e0] bg-white py-[8px] px-4 text-base font-medium outline-none focus:border-[#1F2937] focus:shadow-md"
+      <form
+        onSubmit={handleSubmitForm}
+        className="my-auto w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] mx-auto bg-white dark:bg-gray-800 rounded-md shadow-lg p-6 overflow-y-auto max-h-[90vh]"
+      >
+        {/* Name Input */}
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            value={formState.name}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 py-2 px-4 text-base font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Phone Input */}
+        <div className="mt-4">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Phone
+          </label>
+          <input
+            type="text"
+            name="phone_number"
+            id="phone"
+            value={formState.phone_number}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 py-2 px-4 text-base font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Email Input */}
+        <div className="mt-4">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Email
+          </label>
+          <input
+            type="text"
+            name="email"
+            id="email"
+            value={formState.email}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 py-2 px-4 text-base font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Address Input */}
+        <div className="mt-4">
+          <label
+            htmlFor="address"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Address
+          </label>
+          <input
+            type="text"
+            name="address"
+            id="address"
+            value={formState.address}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 py-2 px-4 text-base font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Image Upload Section */}
+        <div className="mt-6 flex gap-8 items-center">
+          <div className="flex-1">
+          {(formImage || formState.avatar) ? (
+            <div className="flex flex-col items-center">
+              <img
+                src={formImage}
+                alt="Uploaded or default avatar"
+                onClick={() => inputRef.current.click()}
+                className="w-48 h-48 rounded-full object-cover cursor-pointer"
               />
+              <p className="text-xs mt-2 text-gray-500 dark:text-gray-400 italic text-center">
+                Click on the image to upload a new one
+              </p>
             </div>
-          </div>
-  
-          
-  
-          
-  
-          <div className="mt-[20px] grid grid-cols-1 gap-x-4 max-lg:grid-cols-1">
-              <div className='col-span-1'>
-                <label  htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
-                  Email
-                </label>
-                <input type="text" name="name" id="name" value={formState.name}  onChange={handleChange}
-                    className="mt-2  w-[100%] rounded-md border border-[#e0e0e0] bg-white py-[8px] px-4 text-base font-medium outline-none focus:border-[#1F2937] focus:shadow-md"
-                />
+          ) : (
+            <div className="flex flex-col items-center">
+              <div
+                className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 dark:border-gray-300/25 px-6 py-10 cursor-pointer"
+                onClick={() => inputRef.current.click()}
+              >
+                <div className="text-center">
+                  <InsertPhotoIcon
+                    style={{ fontSize: "50px" }}
+                    className="text-gray-400 dark:text-gray-500"
+                  />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Please upload your image
+                  </p>
+                </div>
               </div>
-              <div className='col-span-3 mt-[20px]'>
-                <label htmlFor="address" className="block text-sm font-medium leading-6 text-gray-900">
-                  Address
-                </label>
-                <input type="text" name="address" id="address" value={formState.address} onChange={handleChange}
-                    className="mt-2 w-[100%]  rounded-md border border-[#e0e0e0] bg-white py-[8px] px-4 text-base font-medium outline-none focus:border-[#1F2937] focus:shadow-md"
-                />
-              </div>        
+            </div>
+          )}
+          <input
+            type="file"
+            onChange={handleImageChange}
+            ref={inputRef}
+            className="hidden"
+          />
           </div>
+          
+        </div>
 
-          <div className='bg-white flex flex-col max-h-[550px] rounded-md mt-[30px]
-                        lg:hidden'>
-              { (formImage || formState.avatar) 
-              ? 
-                <div>
-                  <img src={formImage} alt="car" onClick={() => inputRef.current.click()} className='w-[100%] max-w-[390px] max-h-[500px] m-auto '/> 
-                  <p className='text-[10px] text-center mt-4 italic text-gray-500'>Click on above image to upload a new image!</p>
-                </div>                    
-                
-              :
-                <div className="w-[80%] mx-auto my-[30px] ">
-                  <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10" onClick={() => inputRef.current.click()}>
-                    <div className="text-center">     
-                      <div className="mt-4 flex flex-col items-center text-sm leading-6 text-gray-600">
-                        <InsertPhotoIcon style={{fontSize : "50px"}}/>
-                        <p>Please upload your image!!!</p>
-                      </div>
-                    </div>
-                  </div>
-                </div> 
-              }
-            <input type="file" onChange={handleImageChange} ref={inputRef} className='hidden'/>
+        {/* Error Message */}
+        {errors && (
+          <div className="text-red-500 text-sm mt-4 mb-6 bg-red-100 dark:bg-red-900 p-2 rounded-md">
+            <p>
+              Please fill in <span className="font-medium">{errors}</span>{" "}
+              fields!
+            </p>
           </div>
+        )}
 
-          {errors && 
-            <div className="text-red-500 text-sm mt-4 mb-6 bg-[#f8d7da] p-[10px] rounded-md">
-              <p>Please fill in "<span className='font-medium'>{errors}</span>" fields!</p>
-            </div>} 
-          <div className="mb-2 mt-4">
-            <button className="hover:shadow-form w-full rounded-md bg-[#1F2937] py-2 px-8 text-center text-base font-semibold text-white outline-none" 
-                    onClick={handleSubmitForm}>
-              Submit
-            </button>
-          </div>
-        </form>
-
-        <div className='bg-white my-auto min-h-[460px] flex flex-col w-[400px] max-h-[550px] m-[30px] rounded-md ml-[10px]
-                        max-lg:hidden'>
-              { (formImage || formState.avatar) 
-              ? 
-                <img src={formImage} alt="car" className='w-[300px] h-[300px] m-auto rounded-full '/> 
-              :
-                <div className="w-[80%] mx-auto mt-[70px] ">
-                  <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                    <div className="text-center">     
-                      <div className="mt-4 flex flex-col items-center text-sm leading-6 text-gray-600">
-                        <InsertPhotoIcon style={{fontSize : "50px"}}/>
-                        <p>Please upload your image!!!</p>
-                      </div>
-                    </div>
-                  </div>
-                </div> 
-              }
-            <input type="file" onChange={handleImageChange} ref={inputRef} className='hidden'/>
-            <button className="hover:shadow-form w-[200px] h-[40px] mx-auto my-auto   rounded-md bg-[#1F2937]   text-center text-base font-semibold text-white outline-none" 
-                    onClick={() => inputRef.current.click()}>
-              Upload Image
-            </button>
-        </div>  
-      
-      </div>
+        {/* Submit Button */}
+        <div className="mt-6">
+          <button
+            type="submit"
+            className="w-full px-4 py-2 text-white font-semibold bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
   );
-}
+};
 
-export default StaffModalForm
+export default StaffModalForm;

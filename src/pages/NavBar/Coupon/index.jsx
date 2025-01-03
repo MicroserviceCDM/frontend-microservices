@@ -63,11 +63,11 @@ export default function Example() {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-slate-800">
+    <div className="bg-white dark:bg-slate-800 h-screen">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <h1 className="text-black dark:text-white text-3xl">Current Voucher</h1>
 
-        <div className="flex grid grid-cols-1  xl:grid-cols-2 xl:gap-x-16">
+        <div className="flex grid grid-cols-1 xl:grid-cols-2 xl:gap-x-16">
           {vouchers.map((voucher) => (
             <Coupon
               data={{

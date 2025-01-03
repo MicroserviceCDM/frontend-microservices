@@ -1,8 +1,8 @@
 import SideBar from "../../../layouts/components/sideBar/SideBar";
 import { cdmApi } from "../../../misc/cdmApi";
 import { useEffect, useState } from "react";
-import OderdetailModal from "./component/OderdetailModal";
-// import "./OrderHis.css";
+import OrderDetailModal from "./component/OderdetailModal";
+import OtherLoading from '../../../components/OtherLoading';
 
 function CustomerOrderHistory() {
   const [userData, setUserData] = useState(
@@ -11,6 +11,7 @@ function CustomerOrderHistory() {
   const [modalOpen, setModalOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [orderDetail, setOrderDetail] = useState([]);
+  const [orderId, setOrderId] = useState(null);
 
   let totalAmount = 0;
   let totalOrder = 0;
@@ -28,11 +29,25 @@ function CustomerOrderHistory() {
     }
   });
 
+  useEffect(() => {
+      const fetchOrderDetail = async () => {
+        if (modalOpen && orderId) {
+          try {
+            const response = await cdmApi.getOrderDetailByOrderId(orderId);
+            setOrderDetail(response.data);
+            console.log('order detail', response.data.content);
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      };
+      fetchOrderDetail();
+    }, [modalOpen, orderId]);
+
   const getOrders = async () => {
     try {
       const response = await cdmApi.getOrderByUserId(userData.username);
       setOrders(response.data);
-      //console.log(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -47,240 +62,228 @@ function CustomerOrderHistory() {
     getOrders();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
+  const lastIndex = currentPage * recordsPerPage;
+  const firstIndex = lastIndex - recordsPerPage;
+  const records = orders.slice(firstIndex, lastIndex);
+  const npage = Math.ceil(orders.length / recordsPerPage);
+  const numbers = (() => {
+    let nums = [];
+    if (npage <= 1) {
+      return [1];
+    }
+    if (currentPage > 2 && currentPage < npage - 1) {
+      nums = [
+        currentPage - 2,
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        currentPage + 2,
+      ];
+    } else if (currentPage <= 2) {
+      for (let i = 0; i < npage; i++) {
+        if (i < 5) {
+          nums.push(i + 1);
+        }
+      }
+    } else {
+      for (let i = npage - 5; i < npage; i++) {
+        if (i >= 0) {
+          nums.push(i + 1);
+        }
+      }
+    }
+    return nums;
+  })();
+
+  function changeCPage(id) {
+    setCurrentPage(id);
+  }
+
   return (
-    <>
-      {modalOpen && (
-        <OderdetailModal data={orderDetail} setOpenModal={setModalOpen} />
-      )}
+    <div className="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
+      <OrderDetailModal
+        data={orderDetail}
+        setOpenModal={setModalOpen}
+        open={modalOpen}
+      />
+      <SideBar />
+      <div className="flex-grow px-8 py-12">
+        <h1 className="font-bold text-3xl text-black dark:text-white mb-8">
+          Order History
+        </h1>
 
-      <div className="flex bg-white dark:bg-slate-800">
-        <SideBar />
-        <div className="ml-8">
-          <h1 className="font-medium text-3xl mt-16 text-black dark:text-white">
-            Order History
-          </h1>
-
-          {/* banner area */}
-          <div className="flex mt-4 space-x-2 w-4/5" style={{ height: "20vh" }}>
-            <div className="w-4/5 rounded-lg bg-red-200 dark:bg-red-500  flex-1 opacity-90">
-              <p className="text-black dark:text-white font-semibold ml-4 mt-6 text-xl underline">
-                Total Spending:
-              </p>
-              <p className="ml-6 mt-2 text-lg text-red-800 dark:text-white italic">
-                {totalAmount.toLocaleString()} vnd{" "}
-              </p>
-              <p className="ml-4 mt-2 text-xs font-thin text-black dark:text-white">
-                as figures of December 2023
-              </p>
-            </div>
-            <div className="w-4/5 rounded-lg bg-violet-200 dark:bg-violet-500 flex-1 opacity-90">
-              <p className="text-black dark:text-white  font-semibold ml-4 mt-4 text-xl underline">
-                Total order:
-              </p>
-              <p className="ml-6 mt-2 text-lg italic text-indigo-700 dark:text-white ">
-                {totalOrder}
-              </p>
-              <p className="ml-4 mt-2 text-xs font-thin text-black dark:text-white ">
-                as figures of December 2023
-              </p>
-            </div>
-            <div className="w-4/5 rounded-lg bg-gray-200 dark:bg-cyan-500 flex-1 opacity-90">
-              <p className="text-black dark:text-white font-semibold ml-4 mt-4 text-xl underline">
-                Ranking:
-              </p>
-              <p className="ml-6 mt-2 text-lg italic text-gray-700 dark:text-white">
-                {ranking}
-              </p>
-              <p className="ml-4 mt-2 text-xs font-thin text-black dark:text-white">
-                as figures of December 2023
-              </p>
-            </div>
+        {/* banner area */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-red-200 dark:bg-red-500/50 rounded-lg p-6 shadow-md">
+            <p className="text-gray-800 dark:text-white font-semibold text-lg md:text-xl">
+              Total Spending:
+            </p>
+            <p className="text-red-700 dark:text-red-200 font-bold text-xl md:text-2xl mt-2">
+              {totalAmount.toLocaleString()} vnd
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+              as of {new Date().toLocaleDateString()}
+            </p>
           </div>
-
-          {/* Table display orders */}
-
-          {/* <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-              <thead class="text-xs text-gray-700 uppercase bg-gray-400">
-                <tr>
-                  <th scope="col" class="px-6 py-3">
-                    Product name
-                  </th>
-                  <th scope="col" class="px-6 py-3">
-                    Color
-                  </th>
-                  <th scope="col" class="px-6 py-3">
-                    Category
-                  </th>
-                  <th scope="col" class="px-6 py-3">
-                    Price
-                  </th>
-                  <th scope="col" class="px-6 py-3">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="odd:bg-white even:bg-gray-300">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Apple MacBook Pro 17"
-                  </th>
-                  <td class="px-6 py-4">Silver</td>
-                  <td class="px-6 py-4">Laptop</td>
-                  <td class="px-6 py-4">$2999</td>
-                  <td class="px-6 py-4">
-                    <a
-                      href="#"
-                      class="font-medium text-red-400 hover:underline"
-                    >
-                      Pending
-                    </a>
-                  </td>
-                </tr>
-                <tr class="odd:bg-white even:bg-gray-300">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Microsoft Surface Pro
-                  </th>
-                  <td class="px-6 py-4">White</td>
-                  <td class="px-6 py-4">Laptop PC</td>
-                  <td class="px-6 py-4">$1999</td>
-                  <td class="px-6 py-4">
-                    <a
-                      href="#"
-                      class="font-medium text-violet-500 hover:underline"
-                    >
-                      Processing
-                    </a>
-                  </td>
-                </tr>
-                <tr class="odd:bg-white even:bg-gray-300">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Magic Mouse 2
-                  </th>
-                  <td class="px-6 py-4">Black</td>
-                  <td class="px-6 py-4">Accessories</td>
-                  <td class="px-6 py-4">$99</td>
-                  <td class="px-6 py-4">
-                    <a
-                      href="#"
-                      class="font-medium text-lime-500 hover:underline"
-                    >
-                      Complete
-                    </a>
-                  </td>
-                </tr>
-                <tr class="odd:bg-white even:bg-gray-300">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Google Pixel Phone
-                  </th>
-                  <td class="px-6 py-4">Gray</td>
-                  <td class="px-6 py-4">Phone</td>
-                  <td class="px-6 py-4">$799</td>
-                  <td class="px-6 py-4">
-                    <a
-                      href="#"
-                      class="font-medium text-lime-500 hover:underline"
-                    >
-                      Complete
-                    </a>
-                  </td>
-                </tr>
-                <tr class="odd:bg-white even:bg-gray-300">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Apple Watch 5
-                  </th>
-                  <td class="px-6 py-4">Red</td>
-                  <td class="px-6 py-4">Wearables</td>
-                  <td class="px-6 py-4">$999</td>
-                  <td class="px-6 py-4">
-                    <a
-                      href="#"
-                      class="font-medium text-lime-500 hover:underline"
-                    >
-                      Complete
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div> */}
-
-          <div className="mt-8 mr-16">
-            <table className="text-black dark:text-white">
-              <thead>
-                <tr>
-                  <th className="dark:bg-gray-600">No.</th>
-                  <th className="dark:bg-gray-600">Order Date</th>
-                  <th className="dark:bg-gray-600">Total Amount</th>
-                  <th className="dark:bg-gray-600">Payment Status</th>
-                  <th className="dark:bg-gray-600">Shipping Status</th>
-                  <th className="dark:bg-gray-600">Shipping Address</th>
-                  {/* <th>Voucher Value</th>
-                  <th>Shipping Value</th> */}
-                  <th className="dark:bg-gray-600">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <tr key={order.id}>
-                    <td>{index + 1}</td>
-                    <td>{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td>{order.totalAmount.toLocaleString()} vnd</td>
-                    <td
-                      className={` font-bold ${
-                        order.paymentStatus === "Paid"
-                          ? "text-green-800"
-                          : "text-yellow-700 "
-                      }`}
-                    >
-                      {order.paymentStatus}
-                    </td>
-                    <td
-                      className={` font-bold ${
-                        order.shippingStatus === "Pending"
-                          ? "text-yellow-700"
-                          : order.shippingStatus === "Approved"
-                          ? "text-green-800"
-                          : "text-red-700"
-                      }`}
-                    >
-                      {order.shippingStatus}
-                    </td>
-                    <td>{order.shippingAddress}</td>
-                    {/* <td>${order.voucherValue}</td>
-                    <td>${order.shippingValue}</td> */}
-                    <td>
-                      <button
-                        onClick={() => getOrdersDetail(order.id)}
-                        type="button"
-                        class="focus:outline-none text-white bg-green-700  hover:bg-green-800 dark:bg-blue-500  dark:hover:bg-blue-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2   dark:focus:ring-blue-800"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="bg-purple-200 dark:bg-purple-500/50 rounded-lg p-6 shadow-md">
+            <p className="text-gray-800 dark:text-white font-semibold text-lg md:text-xl">
+              Total Orders:
+            </p>
+            <p className="text-purple-700 dark:text-purple-200 font-bold text-xl md:text-2xl mt-2">
+              {totalOrder}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+              as of {new Date().toLocaleDateString()}
+            </p>
+          </div>
+          <div className="bg-blue-100 dark:bg-cyan-500/50 rounded-lg p-6 shadow-md">
+            <p className="text-gray-800 dark:text-white font-semibold text-lg md:text-xl">
+              Ranking:
+            </p>
+            <p className="text-blue-700 dark:text-cyan-200 font-bold text-xl md:text-2xl mt-2">
+              {ranking}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+              as of {new Date().toLocaleDateString()}
+            </p>
           </div>
         </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto text-gray-900 dark:text-white rounded-lg overflow-hidden shadow-lg">
+            <thead className="bg-gray-200 dark:bg-gray-800">
+              <tr className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <th className="py-3 px-4 text-left rounded-tl-lg">No.</th>
+                <th className="py-3 px-4 text-left">Order Date</th>
+                <th className="py-3 px-4 text-left">Total Amount</th>
+                <th className="py-3 px-4 text-left">Payment Status</th>
+                <th className="py-3 px-4 text-left">Shipping Status</th>
+                <th className="py-3 px-4 text-left">Shipping Address</th>
+                <th className="py-3 px-4 text-left rounded-tr-lg">Action</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+            {records.map((order, index) => (
+              <tr
+                key={order.id}
+                className="hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                <td className="py-4 px-4">
+                  {(currentPage - 1) * recordsPerPage + index + 1}
+                </td>
+                <td className="py-4 px-4">
+                  {new Date(order.orderDate).toLocaleDateString()}
+                </td>
+                <td className="py-4 px-4">
+                  {order.totalAmount.toLocaleString()} vnd
+                </td>
+                <td
+                  className={`py-4 px-4 font-semibold ${
+                    order.paymentStatus === "Paid"
+                    ? "!text-green-600 dark:!text-green-400"
+                    : "!text-yellow-600 dark:!text-yellow-400"
+                  }`}
+                >
+                  {order.paymentStatus}
+                </td>
+                <td
+                  className={`py-4 px-4 font-semibold ${
+                    order.shippingStatus === "Pending"
+                      ? "!text-yellow-600 !dark:text-yellow-400"
+                      : order.shippingStatus === "Approved"
+                      ? "!text-green-600 !dark:text-green-400"
+                      : "!text-red-600 !dark:text-red-400"
+                  }`}
+                >
+                  {order.shippingStatus}
+                </td>
+                <td className="py-4 px-4">{order.shippingAddress}</td>
+                <td className="py-4 px-4">
+                  <button
+                    onClick={() => getOrdersDetail(order.id)}
+                    type="button"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          </table>
+        </div>
+        <div className="mt-8 flex justify-end">
+          <nav>
+            <ul className="flex items-center space-x-2">
+              <li>
+                <button
+                  onClick={() => changeCPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <span className="sr-only">Previous</span>
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 6 10"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 1 1 5l4 4"
+                    />
+                  </svg>
+                </button>
+              </li>
+              {numbers.map((n, i) => (
+                <li key={i}>
+                  <button
+                    onClick={() => changeCPage(n)}
+                    className={`px-3 py-1 rounded-lg ${
+                      currentPage === n
+                        ? "bg-blue-600 text-white"
+                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-white"
+                    } border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                  >
+                    {n}
+                  </button>
+                </li>
+              ))}
+              <li>
+                <button
+                  onClick={() => changeCPage(currentPage + 1)}
+                  disabled={currentPage === npage}
+                  className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <span className="sr-only">Next</span>
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 6 10"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m1 9 4-4-4-4"
+                    />
+                  </svg>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
