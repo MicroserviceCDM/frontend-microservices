@@ -9,7 +9,7 @@
 
 
 # Car Connect
-Car Connect is a website that sells cars. Website ii written on react.js.
+Car Connect is a website that sells cars. Website is written on react.js.
 
 # Technology Stack
 
