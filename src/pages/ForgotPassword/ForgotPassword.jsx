@@ -66,7 +66,7 @@ function ForgotPassword() {
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <img
                 className="mx-auto h-32 w-auto"
-                src="https://res.cloudinary.com/droondbdu/image/upload/v1702194603/wepik-gradient-modern-car-detail-clean-amp-repair-logo-20231210074938LRYR_dyz3ez.png"
+                src="https://res.cloudinary.com/dqfhfd7ts/image/upload/v1735749663/i3jwqxdc-removebg-preview_mj6icj.png?fbclid=IwZXh0bgNhZW0CMTEAAR12Y7OCWWYXXWSZ1yKy-J3KsomHeOk17uRYxvq9uOoFlSJC6mkYsISQSOM_aem_d7bwwVnag-bGMcdtoQpfzw"
                 alt="Your Company"
                 />
                 <h2 className="mt-2 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">

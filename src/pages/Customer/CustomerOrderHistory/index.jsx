@@ -39,14 +39,8 @@ function CustomerOrderHistory() {
   };
 
   const getOrdersDetail = async (orderid) => {
-    try {
-      const response = await cdmApi.getOrderDetailByOrderId(orderid);
-      setOrderDetail(response.data.content);
-      console.log(orderDetail);
-      setModalOpen(true);
-    } catch (error) {
-      console.log(error);
-    }
+    setOrderId(orderid);
+    setModalOpen(true);
   };
 
   useEffect(() => {

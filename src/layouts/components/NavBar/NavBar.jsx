@@ -95,21 +95,13 @@ export default function Example() {
                 {/* Remove lg:hidden to show on all screen size*/}
                 <div className="absolute inset-y-0 left-0 flex items-center ">
                   {/* Mobile menu button*/}
-                  <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                    <span className="absolute -inset-0.5" />
-                    <span className="sr-only">Open main menu</span>
-                    {open ? (
-                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                    ) : (
-                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                    )}
-                  </Disclosure.Button>
+
                 </div>
                 <div className="flex-shrink-0">
                   <a href="/">
                     <img
                       className="h-24 w-auto ml-4"
-                      src="https://res.cloudinary.com/droondbdu/image/upload/v1702194603/wepik-gradient-modern-car-detail-clean-amp-repair-logo-20231210074938LRYR_dyz3ez.png"
+                      src="https://res.cloudinary.com/dqfhfd7ts/image/upload/v1735749663/i3jwqxdc-removebg-preview_mj6icj.png?fbclid=IwZXh0bgNhZW0CMTEAAR12Y7OCWWYXXWSZ1yKy-J3KsomHeOk17uRYxvq9uOoFlSJC6mkYsISQSOM_aem_d7bwwVnag-bGMcdtoQpfzw"
                       alt="Your Company"
                     />
                   </a>
@@ -141,7 +133,7 @@ export default function Example() {
                   <a href="/">
                     <img
                       className="h-24 w-auto"
-                      src="https://res.cloudinary.com/droondbdu/image/upload/v1702194603/wepik-gradient-modern-car-detail-clean-amp-repair-logo-20231210074938LRYR_dyz3ez.png"
+                      src="https://res.cloudinary.com/dqfhfd7ts/image/upload/v1735749663/i3jwqxdc-removebg-preview_mj6icj.png?fbclid=IwZXh0bgNhZW0CMTEAAR12Y7OCWWYXXWSZ1yKy-J3KsomHeOk17uRYxvq9uOoFlSJC6mkYsISQSOM_aem_d7bwwVnag-bGMcdtoQpfzw"
                       alt="Your Company"
                     />
                   </a>
